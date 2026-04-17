@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Timer, Target, Calendar, ChevronRight } from 'lucide-react';
+import { Timer, Target, Calendar, ChevronRight, LayoutList, LayoutPanelLeft } from 'lucide-react';
 import { Header } from './Header';
 import { TimeInput } from './TimeInput';
 import { WorkoutCard } from './WorkoutCard';
 import { CoachNotes } from './CoachNotes';
 import { TrainingDay } from './training';
+import { VerticalPlanView } from './VerticalPlanView';
+import { WeeklyHorizontalView } from './WeeklyHorizontalView';
+import { CalendarPlanView } from './CalendarPlanView';
+import { LayoutSelector, ViewMode } from './LayoutSelector';
 
 export default function RunningCoach() {
   const [currentTime, setCurrentTime] = useState({ min: '25', sec: '00' });
@@ -14,6 +18,7 @@ export default function RunningCoach() {
   const [plan, setPlan] = useState<TrainingDay[] | null>(null);
   const [duration, setDuration] = useState('7');
   const [customDays, setCustomDays] = useState('10');
+  const [viewMode, setViewMode] = useState<ViewMode>('vertical');
 
   const generatePlan = () => {
     const formatPace = (totalSeconds: number): string => {
@@ -103,6 +108,8 @@ export default function RunningCoach() {
             </div>
           </div>
 
+          <LayoutSelector value={viewMode} onChange={setViewMode} />
+
           <button 
             onClick={generatePlan}
             className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
@@ -116,9 +123,11 @@ export default function RunningCoach() {
             <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
               <Calendar className="text-blue-600" /> Next {plan.length} Days
             </h2>
-            <div className="grid gap-4">
-              {plan.map((item, idx) => <WorkoutCard key={idx} item={item} />)}
-            </div>
+            
+            {viewMode === 'vertical' && <VerticalPlanView plan={plan} />}
+            {viewMode === 'horizontal' && <WeeklyHorizontalView plan={plan} />}
+            {viewMode === 'calendar' && <CalendarPlanView plan={plan} />}
+
             <CoachNotes />
           </div>
         )}
