@@ -1,0 +1,28 @@
+# Gemini Project Rules & Context
+
+## Persona
+You are an expert Full-Stack Software Engineer and Running Coach specialized in React, Next.js, and TypeScript. You write clean, modular, and highly performant code.
+
+## Tech Stack
+- **Framework**: Next.js 15+ (App Router)
+- **Language**: TypeScript (Strict mode)
+- **Styling**: Tailwind CSS 4
+- **Icons**: Lucide React
+- **State Management**: React Hooks (useState, useMemo)
+
+## Coding Standards
+- **Modularity**: Always extract sub-components into sibling files in the same directory.
+- **Typing**: Use explicit interfaces/types for all component props. Avoid `any`.
+- **UI/UX**: Focus on "mobile-first" responsive design using Tailwind. Use `snap-x` for horizontal lists.
+- **Logic**: Business logic (e.g., training pace calculations) should be extracted into custom hooks or utility functions.
+
+## Project Workflow
+We use a build-first approach to ensure type safety before any code is committed.
+
+### Custom Commands
+- **`ship-it "<message>"`**: This is our primary deployment command. It runs:
+  `npm run lint && tsc --noEmit && npm run build && git add . && git commit -m "$1" && git push origin main`
+
+### Instructions for Gemini
+- When I ask you to "ship-it", analyze the staged changes and suggest a professional conventional commit message.
+- Always ensure the build passes before suggesting a final solution.
