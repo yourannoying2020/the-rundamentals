@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ship-it": "npm run lint && tsc --noEmit && npm run build && git add . && git commit -m"
   },
   "dependencies": {
     "lucide-react": "^1.8.0",
