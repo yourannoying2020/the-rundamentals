@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "validate": "npm run lint && tsc --noEmit",
-    "ship-it": "npm run validate && npm run build && git add . && node -e \"const m=process.argv[1]; if(m){ const s=(c)=>require('child_process').execSync(c,{stdio:'inherit'}); s('git commit -m '+JSON.stringify(m)); s('git push origin main'); }else{ console.log('\\n[SHIP-IT] No message provided. Falling back to diff context...\\n'); require('child_process').execSync('npm run gen-commit',{stdio:'inherit'}); console.log('\\nUse: npm run ship-it -- \\\"your message\\\"'); }\" --",
+    "ship-it": "npm run validate && npm run build && git add . && git commit -m ",
     "gen-commit": "git diff --staged --quiet && git diff || git diff --staged"
   },
   "dependencies": {
