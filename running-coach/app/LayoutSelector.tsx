@@ -21,11 +21,7 @@ const options: LayoutOption[] = [
 ];
 
 export const LayoutSelector = ({ value, onChange }: LayoutSelectorProps) => (
-  <div className="mt-6 pt-6 border-t border-slate-100">
-    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">
-      <LayoutList size={16} /> Display Layout
-    </label>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {options.map((option) => (
         <label 
           key={option.id}
@@ -48,5 +44,4 @@ export const LayoutSelector = ({ value, onChange }: LayoutSelectorProps) => (
         </label>
       ))}
     </div>
-  </div>
 );
