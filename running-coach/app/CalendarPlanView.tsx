@@ -11,7 +11,7 @@ export const CalendarPlanView = ({ plan }: CalendarPlanViewProps) => {
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[800px]">
+      <div className="min-w-[1400px]">
         <div className="grid grid-cols-7 gap-2 mb-2">
           {daysOfWeek.map(day => (
             <div key={day} className="text-center text-xs font-black text-slate-400 uppercase tracking-widest pb-2">

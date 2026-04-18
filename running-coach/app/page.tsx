@@ -124,21 +124,23 @@ export default function RunningCoach() {
             Generate My Training Plan <ChevronRight size={20} />
           </button>
         </div>
+      </div>
 
-        {plan && (
+      {plan && (
+        <div className={`${viewMode === 'vertical' ? 'max-w-3xl' : 'max-w-6xl'} mx-auto transition-all duration-500 ease-in-out`}>
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
               <Calendar className="text-blue-600" /> Next {plan.length} Days
             </h2>
-            
+
             {viewMode === 'vertical' && <VerticalPlanView plan={plan} />}
             {viewMode === 'horizontal' && <WeeklyHorizontalView plan={plan} />}
             {viewMode === 'calendar' && <CalendarPlanView plan={plan} />}
 
             <CoachNotes />
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
