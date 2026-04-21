@@ -5,12 +5,16 @@ export const TimeSchema = z.object({
   sec: z.string(),
 });
 
+export const DayOfWeekSchema = z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
+export type DayOfWeekSchema = z.infer<typeof DayOfWeekSchema>;
+
 export const PlanConfigSchema = z.object({
   currentTime: TimeSchema.default({ min: '25', sec: '00' }),
   targetTime: TimeSchema.default({ min: '22', sec: '30' }),
   duration: z.string().default('7'),
   customDays: z.string().default('10'),
   difficulty: z.number().default(5),
+  startDay: DayOfWeekSchema.default('Monday'),
 });
 
 export type PlanConfig = z.infer<typeof PlanConfigSchema>;

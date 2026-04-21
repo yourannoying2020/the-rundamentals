@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { TrainingDay } from './training';
-import { SavedPlansSchema, type PlanConfig } from './schemas';
+import { SavedPlansSchema, type PlanConfig, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
 export function useTrainingPlan() {
@@ -37,7 +37,7 @@ export function useTrainingPlan() {
     }
   }, [savedPlans, activeId]);
 
-  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty }: PlanConfig) => {
+  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay }: PlanConfig) => {
     const formatPace = (totalSeconds: number): string => {
       const m = Math.floor(totalSeconds / 60);
       const s = Math.round(totalSeconds % 60);
@@ -52,6 +52,15 @@ export function useTrainingPlan() {
     const currentPaceKm = currentTotal / 5;
     const targetPaceKm = targetTotal / 5;
 
+    const daysOfWeekOrder: DayOfWeekSchema[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const startIndex = daysOfWeekOrder.indexOf(startDay);
+    const reorderedDaysOfWeek = [
+      ...daysOfWeekOrder.slice(startIndex),
+      ...daysOfWeekOrder.slice(0, startIndex)
+    ];
+
+    // Base template, always starting with Monday's workout
+    // The actual day will be mapped based on startDay
     const fullPlan: TrainingDay[] = [];
     for (let i = 0; i < totalDays; i++) {
       const weekNum = Math.floor(i / 7) + 1;
@@ -85,12 +94,14 @@ export function useTrainingPlan() {
         { day: 'Sunday', title: 'Endurance Long Run', workout: isTaperWeek ? 'Final 5km Time Trial! Push for your PB.' : isDeloadWeek ? 'Reduced volume for recovery.' : 'The weekly cornerstone for aerobic capacity.', pace: formatPace(isTaperWeek ? weeklyGoalPace : easyPace), distance: isTaperWeek ? '5.0 km' : `${(8 * volumeModifier).toFixed(1)} km`, type: 'easy' },
       ];
 
-      const dayInfo = template[dayInWeek];
+      const currentDayName = reorderedDaysOfWeek[dayInWeek];
+      const dayInfo = template.find(t => t.day === currentDayName) || template[0];
       
       fullPlan.push({
         ...dayInfo,
+        day: currentDayName, // Overwrite template day with the actual day name
         title: isTaperWeek ? `[Taper] ${dayInfo.title}` : isDeloadWeek ? `[Recovery] ${dayInfo.title}` : dayInfo.title,
-        day: totalDays > 7 ? `W${weekNum}: ${dayInfo.day}` : dayInfo.day
+        day: totalDays > 7 ? `W${weekNum}: ${currentDayName}` : currentDayName
       } as TrainingDay);
     }
     setPlan(fullPlan);
@@ -99,7 +110,7 @@ export function useTrainingPlan() {
     if (activeId && savedPlans[activeId]) {
       setSavedPlans(prev => ({
         ...prev,
-        [activeId]: { ...prev[activeId], plan: fullPlan, config: { currentTime, targetTime, duration, customDays, difficulty }, timestamp: Date.now() }
+        [activeId]: { ...prev[activeId], plan: fullPlan, config: { currentTime, targetTime, duration, customDays, difficulty, startDay }, timestamp: Date.now() }
       }));
     }
   };

@@ -12,7 +12,7 @@ import { CalendarPlanView } from './CalendarPlanView';
 import { LayoutSelector, ViewMode } from './LayoutSelector';
 import { useTrainingPlan } from './useTrainingPlan';
 import { PlanOverlay } from './PlanOverlay';
-import { SettingsSchema } from './schemas';
+import { SettingsSchema, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
 export default function RunningCoach() {
@@ -21,6 +21,7 @@ export default function RunningCoach() {
   const [duration, setDuration] = useState('7');
   const [customDays, setCustomDays] = useState('10');
   const [viewMode, setViewMode] = useState<ViewMode>('vertical');
+  const [startDay, setStartDay] = useState<DayOfWeekSchema>('Monday');
   const [difficulty, setDifficulty] = useState(5);
   const [isDurationExpanded, setIsDurationExpanded] = useState(false);
   const [isLayoutExpanded, setIsLayoutExpanded] = useState(false);
@@ -61,11 +62,12 @@ export default function RunningCoach() {
       customDays,
       viewMode,
       difficulty,
+      startDay,
       isDurationExpanded,
       isLayoutExpanded
     };
-    storage.set('running-coach-settings', settings);
-  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, isDurationExpanded, isLayoutExpanded]);
+    storage.set('running-coach-settings', settings); // Note: startDay is implicitly included in settings
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded]);
 
   // Load active plan settings when switched
   useEffect(() => {
@@ -75,9 +77,11 @@ export default function RunningCoach() {
       setTargetTime(config.targetTime);
       setDuration(config.duration);
       setCustomDays(config.customDays);
+      setStartDay(config.startDay);
       setDifficulty(config.difficulty);
     }
   }, [activeId, savedPlans]);
+
 
   const handleResetSettings = () => {
     // Parse empty object through schema to get all default values
@@ -88,6 +92,7 @@ export default function RunningCoach() {
     setCustomDays(defaults.customDays);
     setViewMode(defaults.viewMode);
     setDifficulty(defaults.difficulty);
+    setStartDay(defaults.startDay);
     setIsDurationExpanded(defaults.isDurationExpanded);
     setIsLayoutExpanded(defaults.isLayoutExpanded);
     setSettingsError(false);
@@ -260,9 +265,28 @@ export default function RunningCoach() {
             </AnimatePresence>
           </div>
 
+          <div className="mt-6 pt-6 border-t border-slate-100">
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
+              <Calendar size={16} /> Plan Start Day
+            </label>
+            <select 
+              value={startDay} 
+              onChange={(e) => setStartDay(e.target.value as DayOfWeekSchema)}
+              className="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+            >
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+              <option value="Sunday">Sunday</option>
+            </select>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3">
             <button 
-              onClick={() => generatePlan({ currentTime, targetTime, duration, customDays, difficulty })}
+              onClick={() => generatePlan({ currentTime, targetTime, duration, customDays, difficulty, startDay })}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
             >
               {activeId ? 'Update Plan' : 'Generate Plan'} <ChevronRight size={20} />
