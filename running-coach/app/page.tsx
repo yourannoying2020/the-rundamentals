@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from './Header';
 import { TimeInput } from './TimeInput';
@@ -11,6 +11,8 @@ import { WeeklyHorizontalView } from './WeeklyHorizontalView';
 import { CalendarPlanView } from './CalendarPlanView';
 import { LayoutSelector, ViewMode } from './LayoutSelector';
 import { useTrainingPlan } from './useTrainingPlan';
+import { PlanOverlay } from './PlanOverlay';
+import { SettingsSchema } from './schemas';
 
 export default function RunningCoach() {
   const [currentTime, setCurrentTime] = useState({ min: '25', sec: '00' });
@@ -18,9 +20,101 @@ export default function RunningCoach() {
   const [duration, setDuration] = useState('7');
   const [customDays, setCustomDays] = useState('10');
   const [viewMode, setViewMode] = useState<ViewMode>('vertical');
+  const [difficulty, setDifficulty] = useState(5);
   const [isDurationExpanded, setIsDurationExpanded] = useState(false);
   const [isLayoutExpanded, setIsLayoutExpanded] = useState(false);
-  const { plan, generatePlan } = useTrainingPlan();
+  const [isExporting, setIsExporting] = useState(false);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const { plan, generatePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId } = useTrainingPlan();
+  const isMounted = useRef(false);
+
+  // Load settings on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('running-coach-settings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        const result = SettingsSchema.safeParse(settings);
+        if (result.success) {
+          const data = result.data;
+          if (data.currentTime) setCurrentTime(data.currentTime);
+          if (data.targetTime) setTargetTime(data.targetTime);
+          if (data.duration) setDuration(data.duration);
+          if (data.customDays) setCustomDays(data.customDays);
+          if (data.viewMode) setViewMode(data.viewMode);
+          if (data.difficulty) setDifficulty(data.difficulty);
+          if (data.isDurationExpanded !== undefined) setIsDurationExpanded(data.isDurationExpanded);
+          if (data.isLayoutExpanded !== undefined) setIsLayoutExpanded(data.isLayoutExpanded);
+        }
+      } catch (e) {
+        console.error("Failed to load user settings", e);
+      }
+    }
+    isMounted.current = true;
+  }, []);
+
+  // Save settings whenever they change
+  useEffect(() => {
+    if (!isMounted.current) return;
+    const settings = {
+      currentTime,
+      targetTime,
+      duration,
+      customDays,
+      viewMode,
+      difficulty,
+      isDurationExpanded,
+      isLayoutExpanded
+    };
+    localStorage.setItem('running-coach-settings', JSON.stringify(settings));
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, isDurationExpanded, isLayoutExpanded]);
+
+  // Load active plan settings when switched
+  useEffect(() => {
+    if (activeId && savedPlans[activeId]) {
+      const { config } = savedPlans[activeId];
+      setCurrentTime(config.currentTime);
+      setTargetTime(config.targetTime);
+      setDuration(config.duration);
+      setCustomDays(config.customDays);
+      setDifficulty(config.difficulty);
+    }
+  }, [activeId, savedPlans]);
+
+  const handleExportPDF = async () => {
+    const element = document.getElementById('training-plan-content');
+    if (!element || isExporting) return;
+
+    setIsExporting(true);
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const { jsPDF } = await import('jspdf');
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#f8fafc', // Matches bg-slate-50
+        logging: false,
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: viewMode === 'vertical' ? 'portrait' : 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const fileName = activeId && savedPlans[activeId] 
+        ? `5k-plan-${savedPlans[activeId].name.toLowerCase().replace(/\s+/g, '-')}` 
+        : '5k-training-plan';
+      pdf.save(`${fileName}.pdf`);
+    } catch (error) {
+      console.error("PDF Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans">
@@ -91,6 +185,34 @@ export default function RunningCoach() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-slate-100">
+            <label className="flex items-center justify-between mb-4">
+              <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide">
+                <TrendingUp size={16} /> Training Intensity
+              </span>
+              <Info size={16} className="text-slate-400 cursor-help" title="Determines how quickly your weekly mileage and interval counts increase." />
+            </label>
+            <div className="px-2">
+              <input 
+                type="range" 
+                min="2" 
+                max="10" 
+                step="1"
+                value={difficulty} 
+                onChange={(e) => setDifficulty(parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+              <div className="flex justify-between mt-2 text-xs font-bold text-slate-500">
+                <span>GENTLE (2%)</span>
+                <span className="text-blue-600 font-black">{difficulty}%</span>
+                <span>AGGRESSIVE (10%)</span>
+              </div>
+              <p className="mt-3 text-[11px] text-slate-500 leading-relaxed italic">
+                * Controls the rate of weekly volume progression. Higher percentages result in faster mileage builds.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-slate-100">
             <button 
               onClick={() => setIsLayoutExpanded(!isLayoutExpanded)}
               className="flex items-center justify-between w-full group"
@@ -117,25 +239,64 @@ export default function RunningCoach() {
             </AnimatePresence>
           </div>
 
-          <button 
-            onClick={() => generatePlan({ currentTime, targetTime, duration, customDays })}
-            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
-          >
-            Generate My Training Plan <ChevronRight size={20} />
-          </button>
+          <div className="mt-6 flex gap-3">
+            <button 
+              onClick={() => generatePlan({ currentTime, targetTime, duration, customDays, difficulty })}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
+            >
+              {activeId ? 'Update Plan' : 'Generate Plan'} <ChevronRight size={20} />
+            </button>
+            <button 
+              onClick={() => setIsOverlayOpen(true)}
+              className="bg-white border-2 border-slate-100 hover:border-blue-500 hover:text-blue-600 text-slate-400 font-bold px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+              title="Saved Plans"
+            >
+              <FolderOpen size={20} />
+              <span className="hidden md:inline">Plans</span>
+            </button>
+          </div>
         </div>
       </div>
 
+      <PlanOverlay 
+        isOpen={isOverlayOpen}
+        onClose={() => setIsOverlayOpen(false)}
+        savedPlans={savedPlans}
+        activeId={activeId}
+        onSave={(name) => {
+          saveAsNewPlan(name, { currentTime, targetTime, duration, customDays, difficulty });
+          setIsOverlayOpen(false);
+        }}
+        onLoad={(id) => {
+          setActiveId(id);
+          setIsOverlayOpen(false);
+        }}
+        onDelete={(id) => {
+          deletePlan(id);
+        }}
+      />
+
       {plan && (
         <div className={`${viewMode === 'vertical' ? 'max-w-3xl' : 'max-w-6xl'} mx-auto transition-all duration-500 ease-in-out`}>
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
-              <Calendar className="text-blue-600" /> Next {plan.length} Days
-            </h2>
+          <div className="flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
+                <Calendar className="text-blue-600" /> Next {plan.length} Days
+              </h2>
+              <button
+                onClick={handleExportPDF}
+                disabled={isExporting}
+                className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all disabled:opacity-50"
+              >
+                {isExporting ? 'Generating...' : <><Download size={16} /> Export PDF</>}
+              </button>
+            </div>
 
-            {viewMode === 'vertical' && <VerticalPlanView plan={plan} />}
-            {viewMode === 'horizontal' && <WeeklyHorizontalView plan={plan} />}
-            {viewMode === 'calendar' && <CalendarPlanView plan={plan} />}
+            <div id="training-plan-content" className="p-1">
+              {viewMode === 'vertical' && <VerticalPlanView plan={plan} />}
+              {viewMode === 'horizontal' && <WeeklyHorizontalView plan={plan} />}
+              {viewMode === 'calendar' && <CalendarPlanView plan={plan} />}
+            </div>
 
             <CoachNotes />
           </div>

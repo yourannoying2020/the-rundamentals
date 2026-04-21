@@ -8,15 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "validate": "npm run lint && tsc --noEmit",
-    "ship-it": "npm run validate && npm run build && git add . && git commit -m ",
-    "gen-commit": "git diff --staged --quiet && git diff || git diff --staged"
+    "ship-it": "npm run lint && tsc --noEmit && npm run build && git add . && git commit -m"
   },
   "dependencies": {
     "framer-motion": "^12.4.7",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

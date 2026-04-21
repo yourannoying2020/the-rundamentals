@@ -6,6 +6,5 @@
 - **Component Style**: Keep components small and extracted to sibling files in the same directory.
 
 ## Custom Commands
-- `ship-it "<message>"`: Runs validation and build, stages all changes, and commits with the provided message. Use with `npm run ship-it -- "your message"`.
+- `ship-it "<message>"`: Runs `npm run lint && tsc --noEmit && npm run build && git add . && git commit -m "$1" && git push origin main`.
 - `validate`: Runs `npm run lint && tsc --noEmit`.
-- `gen-commit`: Outputs the diff of staged changes (or unstaged changes if none are staged) to provide context for Gemini to generate a conventional commit message.
