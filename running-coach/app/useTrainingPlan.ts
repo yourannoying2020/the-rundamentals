@@ -99,7 +99,6 @@ export function useTrainingPlan() {
       
       fullPlan.push({
         ...dayInfo,
-        day: currentDayName, // Overwrite template day with the actual day name
         title: isTaperWeek ? `[Taper] ${dayInfo.title}` : isDeloadWeek ? `[Recovery] ${dayInfo.title}` : dayInfo.title,
         day: totalDays > 7 ? `W${weekNum}: ${currentDayName}` : currentDayName
       } as TrainingDay);

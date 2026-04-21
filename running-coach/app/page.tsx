@@ -215,7 +215,9 @@ export default function RunningCoach() {
               <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide">
                 <TrendingUp size={16} /> Training Intensity
               </span>
-              <Info size={16} className="text-slate-400 cursor-help" title="Determines how quickly your weekly mileage and interval counts increase." />
+              <span title="Determines how quickly your weekly mileage and interval counts increase.">
+                <Info size={16} className="text-slate-400 cursor-help" />
+              </span>
             </label>
             <div className="px-2">
               <input 
@@ -319,7 +321,7 @@ export default function RunningCoach() {
         savedPlans={savedPlans}
         activeId={activeId}
         onSave={(name) => {
-          saveAsNewPlan(name, { currentTime, targetTime, duration, customDays, difficulty });
+          saveAsNewPlan(name, { currentTime, targetTime, duration, customDays, difficulty, startDay });
           setIsOverlayOpen(false);
         }}
         onLoad={(id) => {

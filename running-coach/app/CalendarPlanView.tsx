@@ -7,7 +7,12 @@ interface CalendarPlanViewProps {
 }
 
 export const CalendarPlanView = ({ plan }: CalendarPlanViewProps) => {
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // Derive the header sequence from the first 7 days of the plan
+  const daysOfWeek = plan.slice(0, 7).map(item => {
+    // Extract day name even if it's in "W1: Monday" format
+    const dayName = item.day.includes(': ') ? item.day.split(': ')[1] : item.day;
+    return dayName.substring(0, 3);
+  });
 
   return (
     <div className="overflow-x-auto">
