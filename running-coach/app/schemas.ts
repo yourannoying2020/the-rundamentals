@@ -6,11 +6,11 @@ export const TimeSchema = z.object({
 });
 
 export const PlanConfigSchema = z.object({
-  currentTime: TimeSchema,
-  targetTime: TimeSchema,
-  duration: z.string(),
-  customDays: z.string(),
-  difficulty: z.number(),
+  currentTime: TimeSchema.default({ min: '25', sec: '00' }),
+  targetTime: TimeSchema.default({ min: '22', sec: '30' }),
+  duration: z.string().default('7'),
+  customDays: z.string().default('10'),
+  difficulty: z.number().default(5),
 });
 
 export type PlanConfig = z.infer<typeof PlanConfigSchema>;
@@ -35,7 +35,7 @@ export const SavedPlansSchema = z.record(
 );
 
 export const SettingsSchema = PlanConfigSchema.extend({
-  viewMode: z.enum(['vertical', 'horizontal', 'calendar']),
-  isDurationExpanded: z.boolean(),
-  isLayoutExpanded: z.boolean(),
-}).partial();
+  viewMode: z.enum(['vertical', 'horizontal', 'calendar']).default('vertical'),
+  isDurationExpanded: z.boolean().default(false),
+  isLayoutExpanded: z.boolean().default(false),
+});

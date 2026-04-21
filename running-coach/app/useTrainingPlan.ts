@@ -1,36 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
 import { TrainingDay } from './training';
 import { SavedPlansSchema, type PlanConfig } from './schemas';
+import { storage } from './storage';
 
 export function useTrainingPlan() {
   const [plan, setPlan] = useState<TrainingDay[] | null>(null);
   const [savedPlans, setSavedPlans] = useState<Record<string, { name: string; config: PlanConfig; plan: TrainingDay[]; timestamp: number }>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const isMounted = useRef(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('running-coach-saved-plans');
-      const lastId = localStorage.getItem('running-coach-active-id');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const validated = SavedPlansSchema.parse(parsed);
+    const lastId = localStorage.getItem('running-coach-active-id');
+    const result = storage.get('running-coach-saved-plans', SavedPlansSchema);
+    
+    if (result) {
+      if (result.success) {
+        const validated = result.data;
         setSavedPlans(validated);
-        
         if (lastId && validated[lastId]) {
           setPlan(validated[lastId].plan);
           setActiveId(lastId);
         }
+      } else {
+        setStorageError("Your saved plans appear to be corrupted and could not be loaded.");
       }
-    } catch (e) {
-      console.error("Storage load failed", e);
     }
     isMounted.current = true;
   }, []);
 
   useEffect(() => {
     if (!isMounted.current) return;
-    localStorage.setItem('running-coach-saved-plans', JSON.stringify(savedPlans));
+    storage.set('running-coach-saved-plans', savedPlans);
     if (activeId) {
       localStorage.setItem('running-coach-active-id', activeId);
     }
@@ -123,5 +124,5 @@ export function useTrainingPlan() {
     }
   };
 
-  return { plan, generatePlan, savedPlans, activeId, setActiveId, saveAsNewPlan, deletePlan };
+  return { plan, generatePlan, savedPlans, activeId, setActiveId, saveAsNewPlan, deletePlan, storageError };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, Download } from 'lucide-react';
+import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, Download, AlertCircle, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from './Header';
 import { TimeInput } from './TimeInput';
@@ -13,6 +13,7 @@ import { LayoutSelector, ViewMode } from './LayoutSelector';
 import { useTrainingPlan } from './useTrainingPlan';
 import { PlanOverlay } from './PlanOverlay';
 import { SettingsSchema } from './schemas';
+import { storage } from './storage';
 
 export default function RunningCoach() {
   const [currentTime, setCurrentTime] = useState({ min: '25', sec: '00' });
@@ -25,29 +26,26 @@ export default function RunningCoach() {
   const [isLayoutExpanded, setIsLayoutExpanded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const { plan, generatePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId } = useTrainingPlan();
+  const [settingsError, setSettingsError] = useState(false);
+  const { plan, generatePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId, storageError } = useTrainingPlan();
   const isMounted = useRef(false);
 
   // Load settings on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem('running-coach-settings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        const result = SettingsSchema.safeParse(settings);
-        if (result.success) {
-          const data = result.data;
-          if (data.currentTime) setCurrentTime(data.currentTime);
-          if (data.targetTime) setTargetTime(data.targetTime);
-          if (data.duration) setDuration(data.duration);
-          if (data.customDays) setCustomDays(data.customDays);
-          if (data.viewMode) setViewMode(data.viewMode);
-          if (data.difficulty) setDifficulty(data.difficulty);
-          if (data.isDurationExpanded !== undefined) setIsDurationExpanded(data.isDurationExpanded);
-          if (data.isLayoutExpanded !== undefined) setIsLayoutExpanded(data.isLayoutExpanded);
-        }
-      } catch (e) {
-        console.error("Failed to load user settings", e);
+    const result = storage.get('running-coach-settings', SettingsSchema);
+    if (result) {
+      if (result.success) {
+        const data = result.data;
+        setCurrentTime(data.currentTime);
+        setTargetTime(data.targetTime);
+        setDuration(data.duration);
+        setCustomDays(data.customDays);
+        setViewMode(data.viewMode);
+        setDifficulty(data.difficulty);
+        setIsDurationExpanded(data.isDurationExpanded);
+        setIsLayoutExpanded(data.isLayoutExpanded);
+      } else {
+        setSettingsError(true);
       }
     }
     isMounted.current = true;
@@ -66,7 +64,7 @@ export default function RunningCoach() {
       isDurationExpanded,
       isLayoutExpanded
     };
-    localStorage.setItem('running-coach-settings', JSON.stringify(settings));
+    storage.set('running-coach-settings', settings);
   }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, isDurationExpanded, isLayoutExpanded]);
 
   // Load active plan settings when switched
@@ -80,6 +78,20 @@ export default function RunningCoach() {
       setDifficulty(config.difficulty);
     }
   }, [activeId, savedPlans]);
+
+  const handleResetSettings = () => {
+    // Parse empty object through schema to get all default values
+    const defaults = SettingsSchema.parse({});
+    setCurrentTime(defaults.currentTime);
+    setTargetTime(defaults.targetTime);
+    setDuration(defaults.duration);
+    setCustomDays(defaults.customDays);
+    setViewMode(defaults.viewMode);
+    setDifficulty(defaults.difficulty);
+    setIsDurationExpanded(defaults.isDurationExpanded);
+    setIsLayoutExpanded(defaults.isLayoutExpanded);
+    setSettingsError(false);
+  };
 
   const handleExportPDF = async () => {
     const element = document.getElementById('training-plan-content');
@@ -120,6 +132,15 @@ export default function RunningCoach() {
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans">
       <div className="max-w-3xl mx-auto">
         <Header />
+
+        {(storageError || settingsError) && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+            <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={18} />
+            <p className="text-sm text-red-700 font-medium leading-relaxed">
+              {storageError || "Some of your settings were reset because they were stored in an incompatible format."}
+            </p>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-200 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -239,13 +260,23 @@ export default function RunningCoach() {
             </AnimatePresence>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3">
             <button 
               onClick={() => generatePlan({ currentTime, targetTime, duration, customDays, difficulty })}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
             >
               {activeId ? 'Update Plan' : 'Generate Plan'} <ChevronRight size={20} />
             </button>
+            
+            <button 
+              onClick={handleResetSettings}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+              title="Reset to Defaults"
+            >
+              <RotateCcw size={20} />
+              <span className="md:hidden">Reset</span>
+            </button>
+
             <button 
               onClick={() => setIsOverlayOpen(true)}
               className="bg-white border-2 border-slate-100 hover:border-blue-500 hover:text-blue-600 text-slate-400 font-bold px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
