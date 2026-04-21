@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, RotateCcw } from 'lucide-react';
+import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, RotateCcw, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TimeInput } from '../TimeInput';
 import { LayoutSelector, ViewMode } from './LayoutSelector';
@@ -26,6 +26,7 @@ interface PlanSettingsProps {
   isLayoutExpanded: boolean;
   setIsLayoutExpanded: (val: boolean) => void;
   activeId: string | null;
+  onSave: () => void;
   onGenerate: () => void;
   onReset: () => void;
   onOpenOverlay: () => void;
@@ -147,7 +148,10 @@ export const PlanSettings = (props: PlanSettingsProps) => (
 
     <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3">
       <button onClick={props.onGenerate} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
-        {props.activeId ? 'Update Plan' : 'Generate Plan'} <ChevronRight size={20} />
+        Generate Plan <ChevronRight size={20} />
+      </button>
+      <button onClick={props.onSave} className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-100" title="Save to Selected or Default Plan">
+        <Save size={20} /><span className="hidden md:inline">Save</span>
       </button>
       <button onClick={props.onReset} className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-2" title="Reset to Defaults">
         <RotateCcw size={20} /><span className="md:hidden">Reset</span>

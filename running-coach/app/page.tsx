@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useTrainingPlan } from './useTrainingPlan';
 import { PlanOverlay } from './components/PlanOverlay';
@@ -12,7 +12,7 @@ import { SettingsSchema, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
 export default function RunningCoach() {
-  const { plan, generatePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId, storageError } = useTrainingPlan();
+  const { plan, generatePlan, updateActivePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId, storageError } = useTrainingPlan();
 
   // Define server-safe initial settings
   const defaultSettings = SettingsSchema.parse({});
@@ -32,44 +32,7 @@ export default function RunningCoach() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const isMounted = useRef(false);
 
-  useEffect(() => {
-    isMounted.current = true;
-  }, []);
-
-  // Load settings from storage on mount to avoid hydration mismatch
-  useEffect(() => {
-    const result = storage.get('running-coach-settings', SettingsSchema);
-    if (result) {
-      if (result.success) {
-        React.startTransition(() => {
-          const data = result.data;
-          setCurrentTime(data.currentTime);
-          setTargetTime(data.targetTime);
-          setDuration(data.duration);
-          setCustomDays(data.customDays);
-          setViewMode(data.viewMode);
-          setDifficulty(data.difficulty);
-          setStartDay(data.startDay);
-          setIsDurationExpanded(data.isDurationExpanded);
-          setIsLayoutExpanded(data.isLayoutExpanded);
-        });
-      } else {
-        React.startTransition(() => {
-          setSettingsError(true);
-        });
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted.current) return;
-    storage.set('running-coach-settings', {
-      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded
-    });
-  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded]);
-
-
-  const handleResetSettings = () => {
+  const handleResetSettings = useCallback(() => {
     // Parse empty object through schema to get all default values
     const defaults = SettingsSchema.parse({});
     setCurrentTime(defaults.currentTime);
@@ -82,7 +45,50 @@ export default function RunningCoach() {
     setIsDurationExpanded(defaults.isDurationExpanded);
     setIsLayoutExpanded(defaults.isLayoutExpanded);
     setSettingsError(false);
-  };
+  }, [setCurrentTime, setTargetTime, setDuration, setCustomDays, setViewMode, setDifficulty, setStartDay, setIsDurationExpanded, setIsLayoutExpanded, setSettingsError]);
+
+  useEffect(() => {
+    isMounted.current = true;
+  }, []);
+
+  // Load settings from storage on mount to avoid hydration mismatch
+  useEffect(() => {
+    const result = storage.get('running-coach-settings', SettingsSchema);
+    if (result) {
+      if (result.success) {
+        const data = result.data;
+        if (data) { // Check if data is not null or undefined
+          React.startTransition(() => {
+            setCurrentTime(data.currentTime);
+            setTargetTime(data.targetTime);
+            setDuration(data.duration);
+            setCustomDays(data.customDays);
+            setViewMode(data.viewMode);
+            setDifficulty(data.difficulty);
+            setStartDay(data.startDay);
+            setIsDurationExpanded(data.isDurationExpanded);
+            setIsLayoutExpanded(data.isLayoutExpanded);
+          });
+        } else {
+          // If data is null or undefined, trigger reset action
+          React.startTransition(() => {
+            handleResetSettings();
+          });
+        }
+      } else {
+        React.startTransition(() => {
+          setSettingsError(true);
+        });
+      }
+    }
+  }, [handleResetSettings]);
+
+  useEffect(() => {
+    if (!isMounted.current) return;
+    storage.set('running-coach-settings', {
+      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded
+    });
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded]);
 
   const handleExportPDF = async () => {
     const element = document.getElementById('training-plan-content');
@@ -145,6 +151,7 @@ export default function RunningCoach() {
           isLayoutExpanded={isLayoutExpanded} setIsLayoutExpanded={setIsLayoutExpanded}
           activeId={activeId}
           onGenerate={() => generatePlan({ currentTime, targetTime, duration, customDays, difficulty, startDay })}
+          onSave={() => updateActivePlan({ currentTime, targetTime, duration, customDays, difficulty, startDay })}
           onReset={handleResetSettings}
           onOpenOverlay={() => setIsOverlayOpen(true)}
         />
@@ -169,6 +176,7 @@ export default function RunningCoach() {
             setCustomDays(config.customDays);
             setStartDay(config.startDay);
             setDifficulty(config.difficulty);
+            generatePlan(config);
           }
           setActiveId(id);
           setIsOverlayOpen(false);

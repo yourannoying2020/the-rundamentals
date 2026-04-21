@@ -110,13 +110,29 @@ export function useTrainingPlan() {
       } as TrainingDay);
     }
     setPlan(fullPlan);
+  };
 
-    // Auto-update saved plan if we are editing an active one
-    if (activeId && savedPlans[activeId]) {
+  const updateActivePlan = (config: PlanConfig) => {
+    if (!plan) return;
+    
+    let targetId = activeId;
+    
+    // If no active ID, try to find a "default" (the most recent one)
+    if (!targetId) {
+      const ids = Object.keys(savedPlans);
+      if (ids.length > 0) {
+        targetId = ids.sort((a, b) => savedPlans[b].timestamp - savedPlans[a].timestamp)[0];
+      }
+    }
+
+    if (targetId && savedPlans[targetId]) {
       setSavedPlans(prev => ({
         ...prev,
-        [activeId]: { ...prev[activeId], plan: fullPlan, config: { currentTime, targetTime, duration, customDays, difficulty, startDay }, timestamp: Date.now() }
+        [targetId!]: { ...prev[targetId!], plan, config, timestamp: Date.now() }
       }));
+      setActiveId(targetId);
+    } else {
+      saveAsNewPlan("Default Plan", config);
     }
   };
 
@@ -140,5 +156,5 @@ export function useTrainingPlan() {
     }
   };
 
-  return { plan, generatePlan, savedPlans, activeId, setActiveId, saveAsNewPlan, deletePlan, storageError };
+  return { plan, generatePlan, updateActivePlan, savedPlans, activeId, setActiveId, saveAsNewPlan, deletePlan, storageError };
 }
