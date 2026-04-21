@@ -6,6 +6,8 @@ import { CalendarPlanView } from './CalendarPlanView';
 import { CoachNotes } from './CoachNotes';
 import { TrainingDay } from '../training';
 import { ViewMode } from './LayoutSelector';
+import { SavedPlansSchema } from '../schemas';
+import { z } from 'zod';
 
 interface PlanDisplayProps {
   plan: TrainingDay[] | null;
@@ -13,7 +15,7 @@ interface PlanDisplayProps {
   isExporting: boolean;
   onExport: () => void;
   activeId: string | null;
-  savedPlans: any;
+  savedPlans: z.infer<typeof SavedPlansSchema>;
 }
 
 export const PlanDisplay = ({ plan, viewMode, isExporting, onExport }: PlanDisplayProps) => {

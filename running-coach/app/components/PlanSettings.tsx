@@ -3,13 +3,14 @@ import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, Trendin
 import { motion, AnimatePresence } from 'framer-motion';
 import { TimeInput } from '../TimeInput';
 import { LayoutSelector, ViewMode } from './LayoutSelector';
-import { DayOfWeekSchema } from '../schemas';
+import { DayOfWeekSchema, TimeSchema } from '../schemas';
+import { z } from 'zod';
 
 interface PlanSettingsProps {
-  currentTime: { min: string; sec: string };
-  setCurrentTime: (val: any) => void;
-  targetTime: { min: string; sec: string };
-  setTargetTime: (val: any) => void;
+  currentTime: z.infer<typeof TimeSchema>;
+  setCurrentTime: React.Dispatch<React.SetStateAction<z.infer<typeof TimeSchema>>>;
+  targetTime: z.infer<typeof TimeSchema>;
+  setTargetTime: React.Dispatch<React.SetStateAction<z.infer<typeof TimeSchema>>>;
   duration: string;
   setDuration: (val: string) => void;
   customDays: string;

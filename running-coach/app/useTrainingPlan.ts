@@ -4,13 +4,15 @@ import { SavedPlansSchema, type PlanConfig, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
 export function useTrainingPlan() {
-  const [plan, setPlan] = useState<TrainingDay[] | null>(null);
   const [savedPlans, setSavedPlans] = useState<Record<string, { name: string; config: PlanConfig; plan: TrainingDay[]; timestamp: number }>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [plan, setPlan] = useState<TrainingDay[] | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
+
   const isMounted = useRef(false);
 
   useEffect(() => {
+    // Load initial data on mount to avoid hydration mismatch
     const lastId = localStorage.getItem('running-coach-active-id');
     const result = storage.get('running-coach-saved-plans', SavedPlansSchema);
     

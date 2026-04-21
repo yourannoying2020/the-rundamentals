@@ -12,22 +12,31 @@ import { SettingsSchema, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
 export default function RunningCoach() {
-  const [currentTime, setCurrentTime] = useState({ min: '25', sec: '00' });
-  const [targetTime, setTargetTime] = useState({ min: '22', sec: '30' });
-  const [duration, setDuration] = useState('7');
-  const [customDays, setCustomDays] = useState('10');
-  const [viewMode, setViewMode] = useState<ViewMode>('vertical');
-  const [startDay, setStartDay] = useState<DayOfWeekSchema>('Monday');
-  const [difficulty, setDifficulty] = useState(5);
-  const [isDurationExpanded, setIsDurationExpanded] = useState(false);
-  const [isLayoutExpanded, setIsLayoutExpanded] = useState(false);
+  const { plan, generatePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId, storageError } = useTrainingPlan();
+
+  // Define server-safe initial settings
+  const defaultSettings = SettingsSchema.parse({});
+
+  const [currentTime, setCurrentTime] = useState(defaultSettings.currentTime);
+  const [targetTime, setTargetTime] = useState(defaultSettings.targetTime);
+  const [duration, setDuration] = useState(defaultSettings.duration);
+  const [customDays, setCustomDays] = useState(defaultSettings.customDays);
+  const [viewMode, setViewMode] = useState<ViewMode>(defaultSettings.viewMode);
+  const [startDay, setStartDay] = useState<DayOfWeekSchema>(defaultSettings.startDay);
+  const [difficulty, setDifficulty] = useState(defaultSettings.difficulty);
+  const [isDurationExpanded, setIsDurationExpanded] = useState(defaultSettings.isDurationExpanded);
+  const [isLayoutExpanded, setIsLayoutExpanded] = useState(defaultSettings.isLayoutExpanded);
+  const [settingsError, setSettingsError] = useState(false);
+
   const [isExporting, setIsExporting] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const [settingsError, setSettingsError] = useState(false);
-  const { plan, generatePlan, savedPlans, activeId, saveAsNewPlan, deletePlan, setActiveId, storageError } = useTrainingPlan();
   const isMounted = useRef(false);
 
-  // Load settings on mount
+  useEffect(() => {
+    isMounted.current = true;
+  }, []);
+
+  // Load settings from storage on mount to avoid hydration mismatch
   useEffect(() => {
     const result = storage.get('running-coach-settings', SettingsSchema);
     if (result) {
@@ -39,44 +48,21 @@ export default function RunningCoach() {
         setCustomDays(data.customDays);
         setViewMode(data.viewMode);
         setDifficulty(data.difficulty);
+        setStartDay(data.startDay);
         setIsDurationExpanded(data.isDurationExpanded);
         setIsLayoutExpanded(data.isLayoutExpanded);
       } else {
         setSettingsError(true);
       }
     }
-    isMounted.current = true;
   }, []);
 
-  // Save settings whenever they change
   useEffect(() => {
     if (!isMounted.current) return;
-    const settings = {
-      currentTime,
-      targetTime,
-      duration,
-      customDays,
-      viewMode,
-      difficulty,
-      startDay,
-      isDurationExpanded,
-      isLayoutExpanded
-    };
-    storage.set('running-coach-settings', settings); // Note: startDay is implicitly included in settings
-  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded]);
-
-  // Load active plan settings when switched
-  useEffect(() => {
-    if (activeId && savedPlans[activeId]) {
-      const { config } = savedPlans[activeId];
-      setCurrentTime(config.currentTime);
-      setTargetTime(config.targetTime);
-      setDuration(config.duration);
-      setCustomDays(config.customDays);
-      setStartDay(config.startDay);
-      setDifficulty(config.difficulty);
-    }
-  }, [activeId, savedPlans]);
+    storage.set('running-coach-settings', {
+      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded
+    });
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded, storage]);
 
 
   const handleResetSettings = () => {
@@ -170,6 +156,16 @@ export default function RunningCoach() {
           setIsOverlayOpen(false);
         }}
         onLoad={(id) => {
+          const selected = savedPlans[id];
+          if (selected) {
+            const { config } = selected;
+            setCurrentTime(config.currentTime);
+            setTargetTime(config.targetTime);
+            setDuration(config.duration);
+            setCustomDays(config.customDays);
+            setStartDay(config.startDay);
+            setDifficulty(config.difficulty);
+          }
           setActiveId(id);
           setIsOverlayOpen(false);
         }}
