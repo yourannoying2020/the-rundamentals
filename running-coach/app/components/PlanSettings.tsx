@@ -48,15 +48,32 @@ export const PlanSettings = (props: PlanSettingsProps) => (
       <AnimatePresence>
         {props.isDurationExpanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="overflow-hidden">
-            <div className="mt-4 flex gap-3">
-              <select value={props.duration} onChange={(e) => props.setDuration(e.target.value)} className="flex-1 p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-                <option value="7">A week (7 days)</option>
-                <option value="14">A fortnight (14 days)</option>
-                <option value="28">A month (28 days)</option>
-                <option value="custom">Custom days</option>
-              </select>
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {[
+                  { id: '7', label: '1 Week' },
+                  { id: '14', label: '2 Weeks' },
+                  { id: '28', label: '1 Month' },
+                  { id: 'custom', label: 'Custom' }
+                ].map((opt) => (
+                  <label
+                    key={opt.id}
+                    className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight ${
+                      props.duration === opt.id
+                        ? 'border-blue-500 bg-blue-50 text-blue-600'
+                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input type="radio" className="hidden" checked={props.duration === opt.id} onChange={() => props.setDuration(opt.id)} />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
               {props.duration === 'custom' && (
-                <input type="number" value={props.customDays} onChange={(e) => props.setCustomDays(e.target.value)} placeholder="Days" className="w-24 p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-600 text-center" min="1" />
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                  <span className="text-sm font-bold text-slate-500 whitespace-nowrap">Enter Days:</span>
+                  <input type="number" value={props.customDays} onChange={(e) => props.setCustomDays(e.target.value)} placeholder="Days" className="flex-1 p-2 border-b-2 border-blue-200 bg-transparent focus:border-blue-500 outline-none font-bold text-blue-600 text-center" min="1" />
+                </div>
               )}
             </div>
           </motion.div>
@@ -103,12 +120,29 @@ export const PlanSettings = (props: PlanSettingsProps) => (
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
-      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
+      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
         <Calendar size={16} /> Plan Start Day
       </label>
-      <select value={props.startDay} onChange={(e) => props.setStartDay(e.target.value as DayOfWeekSchema)} className="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => <option key={d} value={d}>{d}</option>)}
-      </select>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
+          <label
+            key={d}
+            className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${
+              props.startDay === d
+                ? 'border-blue-500 bg-blue-50 text-blue-600'
+                : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <input
+              type="radio"
+              className="hidden"
+              checked={props.startDay === d}
+              onChange={() => props.setStartDay(d as DayOfWeekSchema)}
+            />
+            {d.substring(0, 3)}
+          </label>
+        ))}
+      </div>
     </div>
 
     <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3">

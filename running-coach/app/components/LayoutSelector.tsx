@@ -21,27 +21,25 @@ const options: LayoutOption[] = [
 ];
 
 export const LayoutSelector = ({ value, onChange }: LayoutSelectorProps) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {options.map((option) => (
-        <label 
-          key={option.id}
-          className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${
-            value === option.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <option.icon size={20} className={value === option.id ? 'text-blue-600' : 'text-slate-400'} />
-            <span className="font-bold text-slate-700 text-sm">{option.label}</span>
-          </div>
-          <input 
-            type="radio" 
-            name="viewMode" 
-            value={option.id} 
-            checked={value === option.id} 
-            onChange={() => onChange(option.id)} 
-            className="w-4 h-4 text-blue-600" 
-          />
-        </label>
-      ))}
-    </div>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+    {options.map((option) => (
+      <label
+        key={option.id}
+        className={`flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight gap-2 ${
+          value === option.id
+            ? 'border-blue-500 bg-blue-50 text-blue-600'
+            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+        }`}
+      >
+        <input
+          type="radio"
+          className="hidden"
+          checked={value === option.id}
+          onChange={() => onChange(option.id)}
+        />
+        <option.icon size={20} className={value === option.id ? 'text-blue-600' : 'text-slate-400'} />
+        {option.label}
+      </label>
+    ))}
+  </div>
 );
