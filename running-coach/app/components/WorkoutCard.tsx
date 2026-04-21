@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
-import { TrainingDay } from './training';
+import { TrainingDay } from '../training';
 
 export const WorkoutCard = ({ item }: { item: TrainingDay }) => (
   <div className={`bg-white p-5 rounded-xl shadow-sm border-l-4 ${

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrainingDay } from './training';
+import { TrainingDay } from '../training';
 import { WorkoutCard } from './WorkoutCard';
 
 interface WeeklyHorizontalViewProps {
