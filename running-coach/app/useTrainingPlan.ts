@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, startTransition } from 'react';
 import { TrainingDay } from './training';
 import { SavedPlansSchema, type PlanConfig, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
@@ -18,14 +18,18 @@ export function useTrainingPlan() {
     
     if (result) {
       if (result.success) {
-        const validated = result.data;
-        setSavedPlans(validated);
-        if (lastId && validated[lastId]) {
-          setPlan(validated[lastId].plan);
-          setActiveId(lastId);
-        }
+        startTransition(() => {
+          const validated = result.data;
+          setSavedPlans(validated);
+          if (lastId && validated[lastId]) {
+            setPlan(validated[lastId].plan);
+            setActiveId(lastId);
+          }
+        });
       } else {
-        setStorageError("Your saved plans appear to be corrupted and could not be loaded.");
+        startTransition(() => {
+          setStorageError("Your saved plans appear to be corrupted and could not be loaded.");
+        });
       }
     }
     isMounted.current = true;

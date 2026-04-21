@@ -41,18 +41,22 @@ export default function RunningCoach() {
     const result = storage.get('running-coach-settings', SettingsSchema);
     if (result) {
       if (result.success) {
-        const data = result.data;
-        setCurrentTime(data.currentTime);
-        setTargetTime(data.targetTime);
-        setDuration(data.duration);
-        setCustomDays(data.customDays);
-        setViewMode(data.viewMode);
-        setDifficulty(data.difficulty);
-        setStartDay(data.startDay);
-        setIsDurationExpanded(data.isDurationExpanded);
-        setIsLayoutExpanded(data.isLayoutExpanded);
+        React.startTransition(() => {
+          const data = result.data;
+          setCurrentTime(data.currentTime);
+          setTargetTime(data.targetTime);
+          setDuration(data.duration);
+          setCustomDays(data.customDays);
+          setViewMode(data.viewMode);
+          setDifficulty(data.difficulty);
+          setStartDay(data.startDay);
+          setIsDurationExpanded(data.isDurationExpanded);
+          setIsLayoutExpanded(data.isLayoutExpanded);
+        });
       } else {
-        setSettingsError(true);
+        React.startTransition(() => {
+          setSettingsError(true);
+        });
       }
     }
   }, []);
@@ -62,7 +66,7 @@ export default function RunningCoach() {
     storage.set('running-coach-settings', {
       currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded
     });
-  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded, storage]);
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded]);
 
 
   const handleResetSettings = () => {
