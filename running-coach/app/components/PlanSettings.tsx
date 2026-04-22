@@ -25,8 +25,6 @@ interface PlanSettingsProps {
   setGoalRaceDate: (val: string | undefined) => void; // New prop
   difficulty: number;
   setDifficulty: (val: number) => void;
-  isLayoutExpanded: boolean;
-  setIsLayoutExpanded: (val: boolean) => void;
   isAdvancedExpanded: boolean;
   setIsAdvancedExpanded: (val: boolean) => void;
   activeId: string | null;
@@ -121,6 +119,15 @@ export const PlanSettings = (props: PlanSettingsProps) => {
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
+      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+        <LayoutList size={16} /> Display Layout
+      </label>
+      <div className="mt-4">
+        <LayoutSelector value={props.viewMode} onChange={props.setViewMode} />
+      </div>
+    </div>
+
+    <div className="mt-6 pt-6 border-t border-slate-100">
       <button onClick={() => props.setIsAdvancedExpanded(!props.isAdvancedExpanded)} className="flex items-center justify-between w-full group">
         <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide group-hover:text-blue-600 transition-colors">
           <Settings size={16} /> Advanced Options
@@ -177,24 +184,6 @@ export const PlanSettings = (props: PlanSettingsProps) => {
                   ))}
                 </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-
-    <div className="mt-6 pt-6 border-t border-slate-100">
-      <button onClick={() => props.setIsLayoutExpanded(!props.isLayoutExpanded)} className="flex items-center justify-between w-full group">
-        <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide group-hover:text-blue-600 transition-colors">
-          <LayoutList size={16} /> Display Layout
-        </span>
-        {props.isLayoutExpanded ? <ChevronDown size={18} className="text-slate-400" /> : <ChevronRight size={18} className="text-slate-400" />}
-      </button>
-      <AnimatePresence>
-        {props.isLayoutExpanded && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="overflow-hidden">
-            <div className="mt-4">
-              <LayoutSelector value={props.viewMode} onChange={props.setViewMode} />
             </div>
           </motion.div>
         )}

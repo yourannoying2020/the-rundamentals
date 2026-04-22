@@ -26,7 +26,6 @@ export default function RunningCoach() {
   const [longRunDay, setLongRunDay] = useState<DayOfWeekSchema>((defaultSettings as any).longRunDay || 'Sunday');
   const [goalRaceDate, setGoalRaceDate] = useState<string | undefined>(defaultSettings.goalRaceDate); // New state for goal race date
   const [difficulty, setDifficulty] = useState(defaultSettings.difficulty);
-  const [isLayoutExpanded, setIsLayoutExpanded] = useState(defaultSettings.isLayoutExpanded);
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(defaultSettings.isAdvancedExpanded);
   const [settingsError, setSettingsError] = useState(false);
 
@@ -45,10 +44,9 @@ export default function RunningCoach() {
     setStartDay(defaults.startDay);
     setLongRunDay(defaults.longRunDay);
     setGoalRaceDate(defaults.goalRaceDate); // Reset goalRaceDate
-    setIsLayoutExpanded(defaults.isLayoutExpanded);
     setIsAdvancedExpanded(defaults.isAdvancedExpanded);
     setSettingsError(false);
-  }, [setCurrentTime, setTargetTime, setDuration, setCustomDays, setViewMode, setDifficulty, setStartDay, setLongRunDay, setGoalRaceDate, setIsLayoutExpanded, setIsAdvancedExpanded, setSettingsError]);
+  }, [setCurrentTime, setTargetTime, setDuration, setCustomDays, setViewMode, setDifficulty, setStartDay, setLongRunDay, setGoalRaceDate, setIsAdvancedExpanded, setSettingsError]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -71,7 +69,6 @@ export default function RunningCoach() {
             setStartDay(data.startDay ?? defaultSettings.startDay);
             setLongRunDay(data.longRunDay ?? defaultSettings.longRunDay);
             setGoalRaceDate(data.goalRaceDate ?? defaultSettings.goalRaceDate); // Load goalRaceDate
-            setIsLayoutExpanded(data.isLayoutExpanded ?? defaultSettings.isLayoutExpanded);
             setIsAdvancedExpanded(data.isAdvancedExpanded ?? defaultSettings.isAdvancedExpanded);
           });
         } else {
@@ -91,9 +88,9 @@ export default function RunningCoach() {
   useEffect(() => {
     if (!isMounted.current) return;
     storage.set('running-coach-settings', {
-      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, goalRaceDate, isLayoutExpanded, isAdvancedExpanded
+      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, goalRaceDate, isAdvancedExpanded
     });
-  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, goalRaceDate, isLayoutExpanded, isAdvancedExpanded]);
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, goalRaceDate, isAdvancedExpanded]);
 
   const handleExportPDF = async () => {
     // Native browser print is the most reliable way to preserve Tailwind styles 
@@ -155,7 +152,6 @@ export default function RunningCoach() {
           longRunDay={longRunDay} setLongRunDay={setLongRunDay}
           goalRaceDate={goalRaceDate} setGoalRaceDate={setGoalRaceDate}
           difficulty={difficulty} setDifficulty={setDifficulty}
-          isLayoutExpanded={isLayoutExpanded} setIsLayoutExpanded={setIsLayoutExpanded}
           isAdvancedExpanded={isAdvancedExpanded} setIsAdvancedExpanded={setIsAdvancedExpanded}
           activeId={activeId}
           onGenerate={() => generatePlan({ currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate })}
