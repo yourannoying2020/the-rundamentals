@@ -20,10 +20,12 @@ export function useTrainingPlan() {
       if (result.success) {
         startTransition(() => {
           const validated = result.data;
-          setSavedPlans(validated);
-          if (lastId && validated[lastId]) {
-            setPlan(validated[lastId].plan);
-            setActiveId(lastId);
+          if (validated) { // Check if data is not null or undefined
+            setSavedPlans(validated);
+            if (lastId && validated[lastId]) {
+              setPlan(validated[lastId].plan);
+              setActiveId(lastId);
+            }
           }
         });
       } else {
