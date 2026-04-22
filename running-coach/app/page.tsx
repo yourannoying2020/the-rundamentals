@@ -106,12 +106,14 @@ export default function RunningCoach() {
     if (goalRaceDate) {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
-      const raceDate = new Date(goalRaceDate);
+      // Parse YYYY-MM-DD as local date to avoid UTC shifts
+      const [year, month, day] = goalRaceDate.split('-').map(Number);
+      const raceDate = new Date(year, month - 1, day);
       raceDate.setHours(0, 0, 0, 0); // Normalize race date to start of day
 
-      const diffTime = Math.abs(raceDate.getTime() - today.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return String(diffDays);
+      const diffDays = Math.round((raceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      // We return the total count of days (inclusive)
+      return String(diffDays + 1);
     }
     return duration; // Fallback to user-selected duration
   }, [goalRaceDate, duration]);

@@ -58,22 +58,32 @@ export function useTrainingPlan() {
     if (goalRaceDate) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const raceDate = new Date(goalRaceDate);
+      // Parse YYYY-MM-DD as local date to avoid UTC shifts
+      const [year, month, day] = goalRaceDate.split('-').map(Number);
+      const raceDate = new Date(year, month - 1, day);
       raceDate.setHours(0, 0, 0, 0);
-      totalDays = Math.ceil(Math.abs(raceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      totalDays = Math.round((raceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     } else {
       totalDays = duration === 'custom' ? parseInt(customDays) || 1 : parseInt(duration);
-    };
+    }
 
+    const iterations = goalRaceDate ? totalDays + 1 : totalDays;
     const currentTotal = parseInt(currentTime.min) * 60 + parseInt(currentTime.sec);
     const targetTotal = parseInt(targetTime.min) * 60 + parseInt(targetTime.sec);
-    const totalWeeks = Math.ceil(totalDays / 7);
+    const totalWeeks = Math.ceil(iterations / 7);
 
     const currentPaceKm = currentTotal / 5;
     const targetPaceKm = targetTotal / 5;
 
     const daysOfWeekOrder: DayOfWeekSchema[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const startIndex = daysOfWeekOrder.indexOf(startDay);
+    
+    // Determine the actual day name for "Today"
+    const actualTodayName = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as DayOfWeekSchema;
+    
+    // If a specific race date is set, the sequence of labels MUST start with Today's actual weekday
+    // to ensure the Race Day item lands on the correct calendar weekday label.
+    const effectiveStartDay = goalRaceDate ? actualTodayName : startDay;
+    const startIndex = daysOfWeekOrder.indexOf(effectiveStartDay);
     const reorderedDaysOfWeek = [
       ...daysOfWeekOrder.slice(startIndex),
       ...daysOfWeekOrder.slice(0, startIndex)
@@ -85,7 +95,7 @@ export function useTrainingPlan() {
     // Base template, always starting with Monday's workout
     // The actual day will be mapped based on startDay
     const fullPlan: TrainingDay[] = [];
-    for (let i = 0; i < totalDays; i++) {
+    for (let i = 0; i < iterations; i++) {
       const weekNum = Math.floor(i / 7) + 1;
       const dayInWeek = i % 7;
       
@@ -118,13 +128,26 @@ export function useTrainingPlan() {
       ];
 
       const currentDayName = reorderedDaysOfWeek[dayInWeek];
-      const dayInfo = template.find(t => t.day === currentDayName) || template[0];
-      
-      fullPlan.push({
-        ...dayInfo,
-        title: isTaperWeek ? `[Taper] ${dayInfo.title}` : isDeloadWeek ? `[Recovery] ${dayInfo.title}` : dayInfo.title,
-        day: totalDays > 7 ? `W${weekNum}: ${currentDayName}` : currentDayName
-      } as TrainingDay);
+      const isActualRaceDay = goalRaceDate && i === iterations - 1;
+
+      if (isActualRaceDay) {
+        fullPlan.push({
+          day: iterations > 7 ? `W${weekNum}: ${currentDayName}` : currentDayName,
+          title: "🏁 RACE DAY!",
+          workout: "This is it! You've put in the work, now trust your training. Stay focused, pace yourself, and enjoy the atmosphere. You've got this!",
+          pace: formatPace(targetTotal / 5),
+          distance: "5.0 km",
+          type: 'hard'
+        } as TrainingDay);
+      } else {
+        const dayInfo = template.find(t => t.day === currentDayName) || template[0];
+        
+        fullPlan.push({
+          ...dayInfo,
+          title: isTaperWeek ? `[Taper] ${dayInfo.title}` : isDeloadWeek ? `[Recovery] ${dayInfo.title}` : dayInfo.title,
+          day: iterations > 7 ? `W${weekNum}: ${currentDayName}` : currentDayName
+        } as TrainingDay);
+      }
     }
     setPlan(fullPlan);
   };
