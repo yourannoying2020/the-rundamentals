@@ -57,7 +57,7 @@ export default function RunningCoach() {
     if (result) {
       if (result.success) {
         const data = result.data;
-        if (data) { // Check if data is not null or undefined
+        if (data !== null && data !== undefined) { // Check if data is not null or undefined
           React.startTransition(() => {
             setCurrentTime(data.currentTime);
             setTargetTime(data.targetTime);
