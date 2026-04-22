@@ -12,13 +12,12 @@ import { z } from 'zod';
 interface PlanDisplayProps {
   plan: TrainingDay[] | null;
   viewMode: ViewMode;
-  isExporting: boolean;
   onExport: () => void;
   activeId: string | null;
   savedPlans: z.infer<typeof SavedPlansSchema>;
 }
 
-export const PlanDisplay = ({ plan, viewMode, isExporting, onExport }: PlanDisplayProps) => {
+export const PlanDisplay = ({ plan, viewMode, onExport }: PlanDisplayProps) => {
   if (!plan) return null;
 
   return (
@@ -30,10 +29,9 @@ export const PlanDisplay = ({ plan, viewMode, isExporting, onExport }: PlanDispl
           </h2>
           <button
             onClick={onExport}
-            disabled={isExporting}
             className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all disabled:opacity-50"
           >
-            {isExporting ? 'Generating...' : <><Download size={16} /> Export PDF</>}
+            <Download size={16} /> Print / Save PDF
           </button>
         </div>
 

@@ -28,7 +28,6 @@ export default function RunningCoach() {
   const [isLayoutExpanded, setIsLayoutExpanded] = useState(defaultSettings.isLayoutExpanded);
   const [settingsError, setSettingsError] = useState(false);
 
-  const [isExporting, setIsExporting] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const isMounted = useRef(false);
 
@@ -91,47 +90,14 @@ export default function RunningCoach() {
   }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, isDurationExpanded, isLayoutExpanded]);
 
   const handleExportPDF = async () => {
-    const element = document.getElementById('training-plan-content');
-    if (!element || isExporting) return;
-
-    setIsExporting(true);
-    try {
-      const { jsPDF } = await import('jspdf');
-      // We also import html2canvas as it's a required peer dependency for the html plugin
-      await import('html2canvas');
-
-      const fileName = activeId && savedPlans[activeId] 
-        ? `5k-plan-${savedPlans[activeId].name.toLowerCase().replace(/\s+/g, '-')}` 
-        : '5k-training-plan';
-
-      const doc = new jsPDF({
-        orientation: viewMode === 'vertical' ? 'p' : 'l',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      // Use the html rendering plugin for better quality and multi-page support
-      await doc.html(element, {
-        callback: (pdf) => {
-          pdf.save(`${fileName}.pdf`);
-          setIsExporting(false);
-        },
-        margin: [10, 10, 10, 10],
-        autoPaging: 'text',
-        x: 0,
-        y: 0,
-        width: viewMode === 'vertical' ? 190 : 277, // Fits A4 width (210mm - margins)
-        windowWidth: 1000 // Sets a consistent internal viewport width for CSS scaling
-      });
-    } catch (error) {
-      console.error("PDF Export failed:", error);
-      setIsExporting(false);
-    }
+    // Native browser print is the most reliable way to preserve Tailwind styles 
+    // and layout perfectly without server-side dependency issues.
+    window.print();
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto print:hidden">
         <Header />
 
         {(storageError || settingsError) && (
@@ -161,39 +127,40 @@ export default function RunningCoach() {
         />
       </div>
 
-      <PlanOverlay 
-        isOpen={isOverlayOpen}
-        onClose={() => setIsOverlayOpen(false)}
-        savedPlans={savedPlans}
-        activeId={activeId}
-        onSave={(name) => {
-          saveAsNewPlan(name, { currentTime, targetTime, duration, customDays, difficulty, startDay });
-          setIsOverlayOpen(false);
-        }}
-        onLoad={(id) => {
-          const selected = savedPlans[id];
-          if (selected) {
-            const { config } = selected;
-            setCurrentTime(config.currentTime);
-            setTargetTime(config.targetTime);
-            setDuration(config.duration);
-            setCustomDays(config.customDays);
-            setStartDay(config.startDay);
-            setDifficulty(config.difficulty);
-            generatePlan(config);
-          }
-          setActiveId(id);
-          setIsOverlayOpen(false);
-        }}
-        onDelete={(id) => {
-          deletePlan(id);
-        }}
-      />
+      <div className="print:hidden">
+        <PlanOverlay 
+          isOpen={isOverlayOpen}
+          onClose={() => setIsOverlayOpen(false)}
+          savedPlans={savedPlans}
+          activeId={activeId}
+          onSave={(name) => {
+            saveAsNewPlan(name, { currentTime, targetTime, duration, customDays, difficulty, startDay });
+            setIsOverlayOpen(false);
+          }}
+          onLoad={(id) => {
+            const selected = savedPlans[id];
+            if (selected) {
+              const { config } = selected;
+              setCurrentTime(config.currentTime);
+              setTargetTime(config.targetTime);
+              setDuration(config.duration);
+              setCustomDays(config.customDays);
+              setStartDay(config.startDay);
+              setDifficulty(config.difficulty);
+              generatePlan(config);
+            }
+            setActiveId(id);
+            setIsOverlayOpen(false);
+          }}
+          onDelete={(id) => {
+            deletePlan(id);
+          }}
+        />
+      </div>
 
       <PlanDisplay 
         plan={plan}
         viewMode={viewMode}
-        isExporting={isExporting}
         onExport={handleExportPDF}
         activeId={activeId}
         savedPlans={savedPlans}
