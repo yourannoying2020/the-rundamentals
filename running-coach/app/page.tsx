@@ -57,7 +57,7 @@ export default function RunningCoach() {
     if (result) {
       if (result.success) {
         const data = result.data;
-        if (data !== null && data !== undefined) { // Check if data is not null or undefined
+        if (data) { // Check if data is not null or undefined
           React.startTransition(() => {
             setCurrentTime(data.currentTime);
             setTargetTime(data.targetTime);
@@ -96,31 +96,35 @@ export default function RunningCoach() {
 
     setIsExporting(true);
     try {
-      const { default: html2canvas } = await import('html2canvas');
       const { jsPDF } = await import('jspdf');
+      // We also import html2canvas as it's a required peer dependency for the html plugin
+      await import('html2canvas');
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: '#f8fafc', // Matches bg-slate-50
-        logging: false,
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: viewMode === 'vertical' ? 'portrait' : 'landscape',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
-      });
-
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       const fileName = activeId && savedPlans[activeId] 
         ? `5k-plan-${savedPlans[activeId].name.toLowerCase().replace(/\s+/g, '-')}` 
         : '5k-training-plan';
-      pdf.save(`${fileName}.pdf`);
+
+      const doc = new jsPDF({
+        orientation: viewMode === 'vertical' ? 'p' : 'l',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      // Use the html rendering plugin for better quality and multi-page support
+      await doc.html(element, {
+        callback: (pdf) => {
+          pdf.save(`${fileName}.pdf`);
+          setIsExporting(false);
+        },
+        margin: [10, 10, 10, 10],
+        autoPaging: 'text',
+        x: 0,
+        y: 0,
+        width: viewMode === 'vertical' ? 190 : 277, // Fits A4 width (210mm - margins)
+        windowWidth: 1000 // Sets a consistent internal viewport width for CSS scaling
+      });
     } catch (error) {
       console.error("PDF Export failed:", error);
-    } finally {
       setIsExporting(false);
     }
   };
