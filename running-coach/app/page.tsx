@@ -59,15 +59,15 @@ export default function RunningCoach() {
         const data = result.data;
         if (data) { // Check if data is not null or undefined
           React.startTransition(() => {
-            setCurrentTime(data.currentTime);
-            setTargetTime(data.targetTime);
-            setDuration(data.duration);
-            setCustomDays(data.customDays);
-            setViewMode(data.viewMode);
-            setDifficulty(data.difficulty);
-            setStartDay(data.startDay);
-            setIsDurationExpanded(data.isDurationExpanded);
-            setIsLayoutExpanded(data.isLayoutExpanded);
+            setCurrentTime(data.currentTime ?? defaultSettings.currentTime);
+            setTargetTime(data.targetTime ?? defaultSettings.targetTime);
+            setDuration(data.duration ?? defaultSettings.duration);
+            setCustomDays(data.customDays ?? defaultSettings.customDays);
+            setViewMode(data.viewMode ?? defaultSettings.viewMode);
+            setDifficulty(data.difficulty ?? defaultSettings.difficulty);
+            setStartDay(data.startDay ?? defaultSettings.startDay);
+            setIsDurationExpanded(data.isDurationExpanded ?? defaultSettings.isDurationExpanded);
+            setIsLayoutExpanded(data.isLayoutExpanded ?? defaultSettings.isLayoutExpanded);
           });
         } else {
           // If data is null or undefined, trigger reset action
