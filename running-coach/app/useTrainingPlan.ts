@@ -3,8 +3,10 @@ import { TrainingDay } from './training';
 import { SavedPlansSchema, type PlanConfig, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
+type SavedPlansMap = Record<string, { name: string; config: PlanConfig; plan: TrainingDay[]; timestamp: number }>;
+
 export function useTrainingPlan() {
-  const [savedPlans, setSavedPlans] = useState<Record<string, { name: string; config: PlanConfig; plan: TrainingDay[]; timestamp: number }>>({});
+  const [savedPlans, setSavedPlans] = useState<SavedPlansMap>({});
   const [activeId, setActiveId] = useState<string | null>(null);
   const [plan, setPlan] = useState<TrainingDay[] | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export function useTrainingPlan() {
     if (result) {
       if (result.success) {
         startTransition(() => {
-          const validated = result.data;
+          const validated = result.data as unknown as SavedPlansMap;
           if (validated) { // Check if data is not null or undefined
             setSavedPlans(validated);
             if (lastId && validated[lastId]) {
