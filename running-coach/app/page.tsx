@@ -96,7 +96,16 @@ export default function RunningCoach() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans print:bg-white print:p-0">
+      {/* Global Print Styles */}
+      <style jsx global>{`
+        @media print {
+          @page { margin: 15mm; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .print-no-break { break-inside: avoid; page-break-inside: avoid; }
+        }
+      `}</style>
+
       <div className="max-w-3xl mx-auto print:hidden">
         <Header />
 
@@ -125,6 +134,12 @@ export default function RunningCoach() {
           onReset={handleResetSettings}
           onOpenOverlay={() => setIsOverlayOpen(true)}
         />
+      </div>
+
+      {/* Print-only Header */}
+      <div className="hidden print:block mb-8 border-b-2 border-blue-600 pb-4">
+        <h1 className="text-3xl font-black text-blue-600 italic">5K COACH TRAINING PLAN</h1>
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Generated for your next Personal Best</p>
       </div>
 
       <div className="print:hidden">

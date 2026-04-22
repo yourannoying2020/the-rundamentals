@@ -21,7 +21,7 @@ export const PlanDisplay = ({ plan, viewMode, onExport }: PlanDisplayProps) => {
   if (!plan) return null;
 
   return (
-    <div className={`${viewMode === 'vertical' ? 'max-w-3xl' : 'max-w-6xl'} mx-auto transition-all duration-500 ease-in-out`}>
+    <div className={`${viewMode === 'vertical' ? 'max-w-3xl' : 'max-w-6xl'} mx-auto transition-all duration-500 ease-in-out print:max-w-none print:w-full`}>
       <div className="flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
@@ -29,7 +29,7 @@ export const PlanDisplay = ({ plan, viewMode, onExport }: PlanDisplayProps) => {
           </h2>
           <button
             onClick={onExport}
-            className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all disabled:opacity-50"
+            className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all disabled:opacity-50 print:hidden"
           >
             <Download size={16} /> Print / Save PDF
           </button>

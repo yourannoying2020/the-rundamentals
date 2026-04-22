@@ -15,18 +15,18 @@ export const CalendarPlanView = ({ plan }: CalendarPlanViewProps) => {
   });
 
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[1400px]">
-        <div className="grid grid-cols-7 gap-2 mb-2">
+    <div className="overflow-x-auto print:overflow-visible">
+      <div className="min-w-[1400px] print:min-w-0 print:w-full">
+        <div className="grid grid-cols-7 gap-2 mb-2 print:hidden">
           {daysOfWeek.map(day => (
             <div key={day} className="text-center text-xs font-black text-slate-400 uppercase tracking-widest pb-2">
               {day}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 print:grid-cols-2 gap-2">
           {plan.map((item, idx) => (
-            <div key={idx} className="h-full">
+            <div key={idx} className="h-full print:no-break">
               <WorkoutCard item={item} />
             </div>
           ))}
