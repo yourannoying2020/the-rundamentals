@@ -7,7 +7,7 @@ interface VerticalPlanViewProps {
 }
 
 export const VerticalPlanView = ({ plan }: VerticalPlanViewProps) => (
-  <div className="grid gap-4">
+  <div className="grid gap-2">
     {plan.map((item, idx) => (
       <WorkoutCard key={idx} item={item} />
     ))}

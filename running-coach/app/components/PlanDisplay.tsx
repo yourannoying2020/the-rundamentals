@@ -22,7 +22,7 @@ export const PlanDisplay = ({ plan, viewMode, onExport }: PlanDisplayProps) => {
 
   return (
     <div className={`${viewMode === 'vertical' ? 'max-w-3xl' : 'max-w-6xl'} mx-auto transition-all duration-500 ease-in-out print:max-w-none print:w-full`}>
-      <div className="flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
             <Calendar className="text-blue-600" /> Next {plan.length} Days
