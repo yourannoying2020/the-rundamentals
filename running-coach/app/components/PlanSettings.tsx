@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, RotateCcw, Save } from 'lucide-react';
+import { Timer, Target, Calendar, ChevronRight, LayoutList, ChevronDown, TrendingUp, Info, FolderOpen, RotateCcw, Save, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TimeInput } from '../TimeInput';
 import { LayoutSelector, ViewMode } from './LayoutSelector';
@@ -29,6 +29,8 @@ interface PlanSettingsProps {
   setIsDurationExpanded: (val: boolean) => void;
   isLayoutExpanded: boolean;
   setIsLayoutExpanded: (val: boolean) => void;
+  isAdvancedExpanded: boolean;
+  setIsAdvancedExpanded: (val: boolean) => void;
   activeId: string | null;
   onSave: () => void;
   onGenerate: () => void;
@@ -120,50 +122,66 @@ export const PlanSettings = (props: PlanSettingsProps) => {
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
-      <label className="flex items-center justify-between mb-4">
-        <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide">
-          <TrendingUp size={16} /> Training Intensity
+      <button onClick={() => props.setIsAdvancedExpanded(!props.isAdvancedExpanded)} className="flex items-center justify-between w-full group">
+        <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide group-hover:text-blue-600 transition-colors">
+          <Settings size={16} /> Advanced Options
         </span>
-        <span title="Determines how quickly your weekly mileage and interval counts increase.">
-          <Info size={16} className="text-slate-400 cursor-help" />
-        </span>
-      </label>
-      <div className="px-2">
-        <input type="range" min="2" max="10" step="1" value={props.difficulty} onChange={(e) => props.setDifficulty(parseInt(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-        <div className="flex justify-between mt-2 text-xs font-bold text-slate-500">
-          <span>GENTLE (2%)</span>
-          <span className="text-blue-600 font-black">{props.difficulty}%</span>
-          <span>AGGRESSIVE (10%)</span>
-        </div>
-        <p className="mt-3 text-[11px] text-slate-500 leading-relaxed italic">* Controls the rate of weekly volume progression.</p>
-      </div>
-    </div>
+        {props.isAdvancedExpanded ? <ChevronDown size={18} className="text-slate-400" /> : <ChevronRight size={18} className="text-slate-400" />}
+      </button>
+      <AnimatePresence>
+        {props.isAdvancedExpanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="overflow-hidden">
+            <div className="mt-4 space-y-6">
+              <div>
+                <label className="flex items-center justify-between mb-4">
+                  <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide">
+                    <TrendingUp size={16} /> Training Intensity
+                  </span>
+                  <span title="Determines how quickly your weekly mileage and interval counts increase.">
+                    <Info size={16} className="text-slate-400 cursor-help" />
+                  </span>
+                </label>
+                <div className="px-2">
+                  <input type="range" min="2" max="10" step="1" value={props.difficulty} onChange={(e) => props.setDifficulty(parseInt(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                  <div className="flex justify-between mt-2 text-xs font-bold text-slate-500">
+                    <span>GENTLE (2%)</span>
+                    <span className="text-blue-600 font-black">{props.difficulty}%</span>
+                    <span>AGGRESSIVE (10%)</span>
+                  </div>
+                </div>
+              </div>
 
-    <div className="mt-6 pt-6 border-t border-slate-100">
-      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
-        <Calendar size={16} /> Long Run Day
-      </label>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
-          <label
-            key={d}
-            className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${
-              props.longRunDay === d
-                ? 'border-green-500 bg-green-50 text-green-600'
-                : 'border-slate-200 text-slate-500 hover:bg-slate-50'
-            }`}
-          >
-            <input
-              type="radio"
-              className="hidden"
-              checked={props.longRunDay === d}
-              onChange={() => props.setLongRunDay(d as DayOfWeekSchema)}
-            />
-            {d.substring(0, 3)}
-          </label>
-        ))}
-      </div>
-      <p className="mt-2 text-[10px] text-slate-400 italic font-medium">* The schedule shifts to ensure hard efforts are appropriately spaced around your long run.</p>
+              <div className="pt-6 border-t border-slate-100">
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+                  <Calendar size={16} /> Long Run Day
+                </label>
+                <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
+                    <label key={d} className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${props.longRunDay === d ? 'border-green-500 bg-green-50 text-green-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                      <input type="radio" className="hidden" checked={props.longRunDay === d} onChange={() => props.setLongRunDay(d as DayOfWeekSchema)} />
+                      {d.substring(0, 3)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-100">
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+                  <Calendar size={16} /> Plan Start Day
+                </label>
+                <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
+                    <label key={d} className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${props.startDay === d ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                      <input type="radio" className="hidden" checked={props.startDay === d} onChange={() => props.setStartDay(d as DayOfWeekSchema)} />
+                      {d.substring(0, 3)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
@@ -182,32 +200,6 @@ export const PlanSettings = (props: PlanSettingsProps) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-
-    <div className="mt-6 pt-6 border-t border-slate-100">
-      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
-        <Calendar size={16} /> Plan Start Day
-      </label>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
-          <label
-            key={d}
-            className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${
-              props.startDay === d
-                ? 'border-blue-500 bg-blue-50 text-blue-600'
-                : 'border-slate-200 text-slate-500 hover:bg-slate-50'
-            }`}
-          >
-            <input
-              type="radio"
-              className="hidden"
-              checked={props.startDay === d}
-              onChange={() => props.setStartDay(d as DayOfWeekSchema)}
-            />
-            {d.substring(0, 3)}
-          </label>
-        ))}
-      </div>
     </div>
 
     <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3">
