@@ -19,6 +19,8 @@ interface PlanSettingsProps {
   setViewMode: (val: ViewMode) => void;
   startDay: DayOfWeekSchema;
   setStartDay: (val: DayOfWeekSchema) => void;
+  longRunDay: DayOfWeekSchema;
+  setLongRunDay: (val: DayOfWeekSchema) => void;
   difficulty: number;
   setDifficulty: (val: number) => void;
   isDurationExpanded: boolean;
@@ -100,6 +102,33 @@ export const PlanSettings = (props: PlanSettingsProps) => (
         </div>
         <p className="mt-3 text-[11px] text-slate-500 leading-relaxed italic">* Controls the rate of weekly volume progression.</p>
       </div>
+    </div>
+
+    <div className="mt-6 pt-6 border-t border-slate-100">
+      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+        <Calendar size={16} /> Long Run Day
+      </label>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
+          <label
+            key={d}
+            className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${
+              props.longRunDay === d
+                ? 'border-green-500 bg-green-50 text-green-600'
+                : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <input
+              type="radio"
+              className="hidden"
+              checked={props.longRunDay === d}
+              onChange={() => props.setLongRunDay(d as DayOfWeekSchema)}
+            />
+            {d.substring(0, 3)}
+          </label>
+        ))}
+      </div>
+      <p className="mt-2 text-[10px] text-slate-400 italic font-medium">* The schedule shifts to ensure hard efforts are appropriately spaced around your long run.</p>
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">

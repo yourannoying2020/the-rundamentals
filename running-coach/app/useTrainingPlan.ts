@@ -3,7 +3,7 @@ import { TrainingDay } from './training';
 import { SavedPlansSchema, type PlanConfig, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
-type SavedPlansMap = Record<string, { name: string; config: PlanConfig; plan: TrainingDay[]; timestamp: number }>;
+type SavedPlansMap = Record<string, { name: string; config: PlanConfig & { longRunDay?: DayOfWeekSchema }; plan: TrainingDay[]; timestamp: number }>;
 
 export function useTrainingPlan() {
   const [savedPlans, setSavedPlans] = useState<SavedPlansMap>({});
@@ -47,7 +47,7 @@ export function useTrainingPlan() {
     }
   }, [savedPlans, activeId]);
 
-  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay }: PlanConfig) => {
+  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay = 'Sunday' }: PlanConfig & { longRunDay?: DayOfWeekSchema }) => {
     const formatPace = (totalSeconds: number): string => {
       const m = Math.floor(totalSeconds / 60);
       const s = Math.round(totalSeconds % 60);
@@ -68,6 +68,9 @@ export function useTrainingPlan() {
       ...daysOfWeekOrder.slice(startIndex),
       ...daysOfWeekOrder.slice(0, startIndex)
     ];
+
+    const longRunDayIndex = daysOfWeekOrder.indexOf(longRunDay);
+    const getDayName = (offset: number) => daysOfWeekOrder[(longRunDayIndex + offset + 7) % 7];
 
     // Base template, always starting with Monday's workout
     // The actual day will be mapped based on startDay
@@ -95,13 +98,13 @@ export function useTrainingPlan() {
       const tempoPace = weeklyGoalPace + 35;
 
       const template = [
-        { day: 'Monday', title: 'Rest & Recovery', workout: isTaperWeek ? 'Complete rest. Stay off your feet.' : 'Focus on mobility or light stretching.', pace: '-', distance: '-', type: 'rest' },
-        { day: 'Tuesday', title: 'Foundation Run', workout: 'Easy aerobic building run.', pace: formatPace(easyPace), distance: `${(5 * volumeModifier).toFixed(1)} km`, type: 'easy' },
-        { day: 'Wednesday', title: 'Goal Pace Intervals', workout: isTaperWeek ? '3 x 800m at goal pace. Keep it sharp but short.' : `${Math.floor(6 * volumeModifier)} x 800m with 2:00 recovery walk.`, pace: formatPace(weeklyGoalPace), distance: isTaperWeek ? '2.4 km + WU/CD' : '4.8 km + WU/CD', type: 'hard' },
-        { day: 'Thursday', title: 'Recovery or Rest', workout: 'Very light movement or total rest.', pace: formatPace(easyPace + 20), distance: `${(3 * volumeModifier).toFixed(1)} km`, type: 'easy' },
-        { day: 'Friday', title: 'Threshold (Tempo)', workout: isTaperWeek ? 'Short 15 min tempo effort to keep legs moving.' : 'Sustainable hard effort to build stamina.', pace: formatPace(tempoPace), distance: `${(isTaperWeek ? 2.5 : 4 * volumeModifier).toFixed(1)} km`, type: 'hard' },
-        { day: 'Saturday', title: 'Shakeout Run', workout: 'Keep heart rate low, legs moving.', pace: formatPace(easyPace), distance: '3 km', type: 'easy' },
-        { day: 'Sunday', title: 'Endurance Long Run', workout: isTaperWeek ? 'Final 5km Time Trial! Push for your PB.' : isDeloadWeek ? 'Reduced volume for recovery.' : 'The weekly cornerstone for aerobic capacity.', pace: formatPace(isTaperWeek ? weeklyGoalPace : easyPace), distance: isTaperWeek ? '5.0 km' : `${(8 * volumeModifier).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(-6), title: 'Rest & Recovery', workout: isTaperWeek ? 'Complete rest. Stay off your feet.' : 'Focus on mobility or light stretching.', pace: '-', distance: '-', type: 'rest' },
+        { day: getDayName(-5), title: 'Foundation Run', workout: 'Easy aerobic building run.', pace: formatPace(easyPace), distance: `${(5 * volumeModifier).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(-4), title: 'Goal Pace Intervals', workout: isTaperWeek ? '3 x 800m at goal pace. Keep it sharp but short.' : `${Math.floor(6 * volumeModifier)} x 800m with 2:00 recovery walk.`, pace: formatPace(weeklyGoalPace), distance: isTaperWeek ? '2.4 km + WU/CD' : '4.8 km + WU/CD', type: 'hard' },
+        { day: getDayName(-3), title: 'Recovery or Rest', workout: 'Very light movement or total rest.', pace: formatPace(easyPace + 20), distance: `${(3 * volumeModifier).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(-2), title: 'Threshold (Tempo)', workout: isTaperWeek ? 'Short 15 min tempo effort to keep legs moving.' : 'Sustainable hard effort to build stamina.', pace: formatPace(tempoPace), distance: `${(isTaperWeek ? 2.5 : 4 * volumeModifier).toFixed(1)} km`, type: 'hard' },
+        { day: getDayName(-1), title: 'Shakeout Run', workout: 'Keep heart rate low, legs moving.', pace: formatPace(easyPace), distance: '3 km', type: 'easy' },
+        { day: getDayName(0), title: 'Endurance Long Run', workout: isTaperWeek ? 'Final 5km Time Trial! Push for your PB.' : isDeloadWeek ? 'Reduced volume for recovery.' : 'The weekly cornerstone for aerobic capacity.', pace: formatPace(isTaperWeek ? weeklyGoalPace : easyPace), distance: isTaperWeek ? '5.0 km' : `${(8 * volumeModifier).toFixed(1)} km`, type: 'easy' },
       ];
 
       const currentDayName = reorderedDaysOfWeek[dayInWeek];
@@ -116,7 +119,7 @@ export function useTrainingPlan() {
     setPlan(fullPlan);
   };
 
-  const updateActivePlan = (config: PlanConfig) => {
+  const updateActivePlan = (config: PlanConfig & { longRunDay?: DayOfWeekSchema }) => {
     if (!plan) return;
     
     let targetId = activeId;
@@ -140,7 +143,7 @@ export function useTrainingPlan() {
     }
   };
 
-  const saveAsNewPlan = (name: string, config: PlanConfig) => {
+  const saveAsNewPlan = (name: string, config: PlanConfig & { longRunDay?: DayOfWeekSchema }) => {
     if (!plan) return;
     const id = Math.random().toString(36).substr(2, 9);
     setSavedPlans(prev => ({
