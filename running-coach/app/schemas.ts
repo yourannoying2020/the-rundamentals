@@ -42,7 +42,6 @@ export const SavedPlansSchema = z.record(
 
 export const SettingsSchema = PlanConfigSchema.extend({
   viewMode: z.enum(['vertical', 'horizontal', 'calendar']).default('vertical'),
-  isDurationExpanded: z.boolean().default(false),
   isLayoutExpanded: z.boolean().default(false),
   isAdvancedExpanded: z.boolean().default(false),
 });

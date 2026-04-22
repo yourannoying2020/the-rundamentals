@@ -25,8 +25,6 @@ interface PlanSettingsProps {
   setGoalRaceDate: (val: string | undefined) => void; // New prop
   difficulty: number;
   setDifficulty: (val: number) => void;
-  isDurationExpanded: boolean;
-  setIsDurationExpanded: (val: boolean) => void;
   isLayoutExpanded: boolean;
   setIsLayoutExpanded: (val: boolean) => void;
   isAdvancedExpanded: boolean;
@@ -48,77 +46,78 @@ export const PlanSettings = (props: PlanSettingsProps) => {
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
-      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
-        <Calendar size={16} /> Goal Race Date
-      </label>
-      <div className="flex items-center gap-3">
-        <input
-          type="date"
-          value={props.goalRaceDate || ''}
-          onChange={(e) => props.setGoalRaceDate(e.target.value || undefined)}
-          min={today} // Prevent selecting past dates
-          className="flex-1 p-3 border rounded-xl bg-slate-50 focus:border-blue-500 outline-none font-bold text-blue-600"
-        />
-        {props.goalRaceDate && (
-          <button
-            onClick={() => props.setGoalRaceDate(undefined)}
-            className="text-sm text-red-500 hover:text-red-700 font-medium"
-            title="Clear Goal Race Date"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      <p className="mt-2 text-[10px] text-slate-400 italic font-medium">
-        * Setting a race date automatically calculates the plan duration.
+      <p className="text-sm text-slate-500 mb-6 font-medium italic">
+        Start by entering a goal race date or a select a duration below to create the plan for, then click <strong>Generate Plan</strong> to view your schedule.
+        <span className="block mt-2">Once generated, use <strong>Save</strong> to keep your plan, or open <strong>Plans</strong> to restore a previously created one.</span>
       </p>
-    </div>
 
-    <div className="mt-6 pt-6 border-t border-slate-100">
-      <button onClick={() => props.setIsDurationExpanded(!props.isDurationExpanded)} className="flex items-center justify-between w-full group">
-        <span className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide group-hover:text-blue-600 transition-colors">
-          <Calendar size={16} /> Plan Duration
-        </span>
-        {props.isDurationExpanded ? <ChevronDown size={18} className="text-slate-400" /> : <ChevronRight size={18} className="text-slate-400" />}
-      </button>
-      <AnimatePresence>
-        {props.isDurationExpanded && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="overflow-hidden">
-            <div className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {[
-                  { id: '7', label: '1 Week' },
-                  { id: '14', label: '2 Weeks' },
-                  { id: '28', label: '1 Month' },
-                  { id: 'custom', label: 'Custom' }
-                ].map((opt) => (
-                  <label
-                    key={opt.id}
-                    className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight ${props.duration === opt.id ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'} ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <input type="radio" className="hidden" checked={props.duration === opt.id} onChange={() => props.setDuration(opt.id)} />
-                    {opt.label}
-                  </label>
-                ))}
-              </div>
-              {props.duration === 'custom' && (
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
-                  <span className="text-sm font-bold text-slate-500 whitespace-nowrap">Enter Days:</span>
-                  <input 
-                    type="number" 
-                    value={props.customDays} 
-                    onChange={(e) => props.setCustomDays(e.target.value)} 
-                    placeholder="Days" 
-                    className={`flex-1 p-2 border-b-2 border-blue-200 bg-transparent focus:border-blue-500 outline-none font-bold text-blue-600 text-center ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`} 
-                    min="1" 
-                    disabled={!!props.goalRaceDate} 
-                  />
-                </div>
-              )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Goal Race Date Column */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+            <Calendar size={16} /> Goal Race Date
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="date"
+              value={props.goalRaceDate || ''}
+              onChange={(e) => props.setGoalRaceDate(e.target.value || undefined)}
+              min={today}
+              className="flex-1 p-3 border rounded-xl bg-slate-50 focus:border-blue-500 outline-none font-bold text-blue-600"
+            />
+            {props.goalRaceDate && (
+              <button
+                onClick={() => props.setGoalRaceDate(undefined)}
+                className="text-sm text-red-500 hover:text-red-700 font-medium"
+                title="Clear Goal Race Date"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <p className="mt-2 text-[10px] text-slate-400 italic font-medium">
+            * Picking a date overrides manual duration.
+          </p>
+        </div>
+
+        {/* Plan Duration Column */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+            <Calendar size={16} /> Plan Duration
+          </label>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {[
+                { id: '7', label: '1 Week' },
+                { id: '14', label: '2 Weeks' },
+                { id: '28', label: '1 Month' },
+                { id: 'custom', label: 'Custom' }
+              ].map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight ${props.duration === opt.id ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'} ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <input type="radio" className="hidden" checked={props.duration === opt.id} onChange={() => props.setDuration(opt.id)} disabled={!!props.goalRaceDate} />
+                  {opt.label}
+                </label>
+              ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {props.duration === 'custom' && (
+              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                <span className="text-sm font-bold text-slate-500 whitespace-nowrap">Days:</span>
+                <input 
+                  type="number" 
+                  value={props.customDays} 
+                  onChange={(e) => props.setCustomDays(e.target.value)} 
+                  className={`flex-1 p-2 border-b-2 border-blue-200 bg-transparent focus:border-blue-500 outline-none font-bold text-blue-600 text-center ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                  min="1" 
+                  disabled={!!props.goalRaceDate} 
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
