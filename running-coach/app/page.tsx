@@ -102,7 +102,7 @@ export default function RunningCoach() {
         @media print {
           @page { margin: 15mm; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .print-no-break { break-inside: avoid; page-break-inside: avoid; }
+          .print-no-break { break-inside: avoid !important; page-break-inside: avoid !important; display: block !important; }
         }
       `}</style>
 

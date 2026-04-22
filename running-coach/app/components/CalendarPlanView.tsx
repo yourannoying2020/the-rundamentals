@@ -26,7 +26,7 @@ export const CalendarPlanView = ({ plan }: CalendarPlanViewProps) => {
         </div>
         <div className="grid grid-cols-7 print:grid-cols-2 gap-2">
           {plan.map((item, idx) => (
-            <div key={idx} className="h-full print:no-break">
+            <div key={idx} className="h-full print-no-break">
               <WorkoutCard item={item} />
             </div>
           ))}

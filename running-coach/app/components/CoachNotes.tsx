@@ -2,7 +2,7 @@ import React from 'react';
 import { Info } from 'lucide-react';
 
 export const CoachNotes = () => (
-  <div className="mt-8 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+  <div className="mt-8 bg-blue-50 p-6 rounded-2xl border border-blue-100 print-no-break">
     <h3 className="font-bold flex items-center gap-2 text-blue-800 mb-2">
       <Info size={18} /> {"Coach's Notes"}
     </h3>

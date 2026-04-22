@@ -3,7 +3,7 @@ import { Activity } from 'lucide-react';
 import { TrainingDay } from '../training';
 
 export const WorkoutCard = ({ item }: { item: TrainingDay }) => (
-  <div className={`bg-white p-3 rounded-xl shadow-sm border-l-4 print:border-2 print:shadow-none print:no-break ${
+  <div className={`bg-white p-3 rounded-xl shadow-sm border-l-4 print:border-2 print:shadow-none print-no-break ${
     item.type === 'hard' ? 'border-l-orange-500' : 
     item.type === 'rest' ? 'border-l-slate-300' : 
     'border-l-green-500'

@@ -15,7 +15,7 @@ export const WeeklyHorizontalView = ({ plan }: WeeklyHorizontalViewProps) => (
         </h3>
         <div className="flex print:flex-wrap gap-4 overflow-x-auto print:overflow-visible pb-4 snap-x">
           {plan.slice(weekIdx * 7, (weekIdx + 1) * 7).map((item, idx) => (
-            <div key={idx} className="min-w-[200px] md:min-w-[240px] print:min-w-[45%] print:flex-1 snap-start print:no-break">
+            <div key={idx} className="min-w-[200px] md:min-w-[240px] print:min-w-[45%] print:flex-1 snap-start print-no-break">
               <WorkoutCard item={item} />
             </div>
           ))}
