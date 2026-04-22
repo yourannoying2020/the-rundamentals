@@ -21,6 +21,8 @@ interface PlanSettingsProps {
   setStartDay: (val: DayOfWeekSchema) => void;
   longRunDay: DayOfWeekSchema;
   setLongRunDay: (val: DayOfWeekSchema) => void;
+  goalRaceDate: string | undefined; // New prop
+  setGoalRaceDate: (val: string | undefined) => void; // New prop
   difficulty: number;
   setDifficulty: (val: number) => void;
   isDurationExpanded: boolean;
@@ -34,11 +36,40 @@ interface PlanSettingsProps {
   onOpenOverlay: () => void;
 }
 
-export const PlanSettings = (props: PlanSettingsProps) => (
+export const PlanSettings = (props: PlanSettingsProps) => {
+  const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+  return (
   <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-200 mb-8">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <TimeInput label="Recent 5km Time (MM:SS)" icon={Timer} value={props.currentTime} onChange={props.setCurrentTime} />
       <TimeInput label="Target 5km Time (MM:SS)" icon={Target} value={props.targetTime} onChange={props.setTargetTime} isTarget />
+    </div>
+
+    <div className="mt-6 pt-6 border-t border-slate-100">
+      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+        <Calendar size={16} /> Goal Race Date
+      </label>
+      <div className="flex items-center gap-3">
+        <input
+          type="date"
+          value={props.goalRaceDate || ''}
+          onChange={(e) => props.setGoalRaceDate(e.target.value || undefined)}
+          min={today} // Prevent selecting past dates
+          className="flex-1 p-3 border rounded-xl bg-slate-50 focus:border-blue-500 outline-none font-bold text-blue-600"
+        />
+        {props.goalRaceDate && (
+          <button
+            onClick={() => props.setGoalRaceDate(undefined)}
+            className="text-sm text-red-500 hover:text-red-700 font-medium"
+            title="Clear Goal Race Date"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <p className="mt-2 text-[10px] text-slate-400 italic font-medium">
+        * Setting a race date automatically calculates the plan duration.
+      </p>
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">
@@ -61,11 +92,7 @@ export const PlanSettings = (props: PlanSettingsProps) => (
                 ].map((opt) => (
                   <label
                     key={opt.id}
-                    className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight ${
-                      props.duration === opt.id
-                        ? 'border-blue-500 bg-blue-50 text-blue-600'
-                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
-                    }`}
+                    className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight ${props.duration === opt.id ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'} ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <input type="radio" className="hidden" checked={props.duration === opt.id} onChange={() => props.setDuration(opt.id)} />
                     {opt.label}
@@ -75,7 +102,15 @@ export const PlanSettings = (props: PlanSettingsProps) => (
               {props.duration === 'custom' && (
                 <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
                   <span className="text-sm font-bold text-slate-500 whitespace-nowrap">Enter Days:</span>
-                  <input type="number" value={props.customDays} onChange={(e) => props.setCustomDays(e.target.value)} placeholder="Days" className="flex-1 p-2 border-b-2 border-blue-200 bg-transparent focus:border-blue-500 outline-none font-bold text-blue-600 text-center" min="1" />
+                  <input 
+                    type="number" 
+                    value={props.customDays} 
+                    onChange={(e) => props.setCustomDays(e.target.value)} 
+                    placeholder="Days" 
+                    className={`flex-1 p-2 border-b-2 border-blue-200 bg-transparent focus:border-blue-500 outline-none font-bold text-blue-600 text-center ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                    min="1" 
+                    disabled={!!props.goalRaceDate} 
+                  />
                 </div>
               )}
             </div>
@@ -191,3 +226,4 @@ export const PlanSettings = (props: PlanSettingsProps) => (
     </div>
   </div>
 );
+};

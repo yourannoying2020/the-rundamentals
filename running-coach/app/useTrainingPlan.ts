@@ -3,7 +3,7 @@ import { TrainingDay } from './training';
 import { SavedPlansSchema, type PlanConfig, DayOfWeekSchema } from './schemas';
 import { storage } from './storage';
 
-type SavedPlansMap = Record<string, { name: string; config: PlanConfig & { longRunDay?: DayOfWeekSchema }; plan: TrainingDay[]; timestamp: number }>;
+type SavedPlansMap = Record<string, { name: string; config: PlanConfig; plan: TrainingDay[]; timestamp: number }>;
 
 export function useTrainingPlan() {
   const [savedPlans, setSavedPlans] = useState<SavedPlansMap>({});
@@ -47,16 +47,26 @@ export function useTrainingPlan() {
     }
   }, [savedPlans, activeId]);
 
-  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay = 'Sunday' }: PlanConfig & { longRunDay?: DayOfWeekSchema }) => {
+  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay = 'Sunday', goalRaceDate }: PlanConfig) => {
     const formatPace = (totalSeconds: number): string => {
       const m = Math.floor(totalSeconds / 60);
       const s = Math.round(totalSeconds % 60);
       return `${m}:${s < 10 ? '0' : ''}${s} /km`;
     };
 
+    let totalDays: number;
+    if (goalRaceDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const raceDate = new Date(goalRaceDate);
+      raceDate.setHours(0, 0, 0, 0);
+      totalDays = Math.ceil(Math.abs(raceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    } else {
+      totalDays = duration === 'custom' ? parseInt(customDays) || 1 : parseInt(duration);
+    };
+
     const currentTotal = parseInt(currentTime.min) * 60 + parseInt(currentTime.sec);
     const targetTotal = parseInt(targetTime.min) * 60 + parseInt(targetTime.sec);
-    const totalDays = duration === 'custom' ? parseInt(customDays) || 1 : parseInt(duration);
     const totalWeeks = Math.ceil(totalDays / 7);
 
     const currentPaceKm = currentTotal / 5;
@@ -119,7 +129,7 @@ export function useTrainingPlan() {
     setPlan(fullPlan);
   };
 
-  const updateActivePlan = (config: PlanConfig & { longRunDay?: DayOfWeekSchema }) => {
+  const updateActivePlan = (config: PlanConfig) => {
     if (!plan) return;
     
     let targetId = activeId;
@@ -143,7 +153,7 @@ export function useTrainingPlan() {
     }
   };
 
-  const saveAsNewPlan = (name: string, config: PlanConfig & { longRunDay?: DayOfWeekSchema }) => {
+  const saveAsNewPlan = (name: string, config: PlanConfig) => {
     if (!plan) return;
     const id = Math.random().toString(36).substr(2, 9);
     setSavedPlans(prev => ({

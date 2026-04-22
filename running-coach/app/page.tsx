@@ -24,6 +24,7 @@ export default function RunningCoach() {
   const [viewMode, setViewMode] = useState<ViewMode>(defaultSettings.viewMode);
   const [startDay, setStartDay] = useState<DayOfWeekSchema>(defaultSettings.startDay);
   const [longRunDay, setLongRunDay] = useState<DayOfWeekSchema>((defaultSettings as any).longRunDay || 'Sunday');
+  const [goalRaceDate, setGoalRaceDate] = useState<string | undefined>(defaultSettings.goalRaceDate); // New state for goal race date
   const [difficulty, setDifficulty] = useState(defaultSettings.difficulty);
   const [isDurationExpanded, setIsDurationExpanded] = useState(defaultSettings.isDurationExpanded);
   const [isLayoutExpanded, setIsLayoutExpanded] = useState(defaultSettings.isLayoutExpanded);
@@ -42,11 +43,12 @@ export default function RunningCoach() {
     setViewMode(defaults.viewMode);
     setDifficulty(defaults.difficulty);
     setStartDay(defaults.startDay);
-    setLongRunDay((defaults as any).longRunDay || 'Sunday');
+    setLongRunDay(defaults.longRunDay);
+    setGoalRaceDate(defaults.goalRaceDate); // Reset goalRaceDate
     setIsDurationExpanded(defaults.isDurationExpanded);
     setIsLayoutExpanded(defaults.isLayoutExpanded);
     setSettingsError(false);
-  }, [setCurrentTime, setTargetTime, setDuration, setCustomDays, setViewMode, setDifficulty, setStartDay, setLongRunDay, setIsDurationExpanded, setIsLayoutExpanded, setSettingsError]);
+  }, [setCurrentTime, setTargetTime, setDuration, setCustomDays, setViewMode, setDifficulty, setStartDay, setLongRunDay, setGoalRaceDate, setIsDurationExpanded, setIsLayoutExpanded, setSettingsError]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -67,7 +69,8 @@ export default function RunningCoach() {
             setViewMode(data.viewMode ?? defaultSettings.viewMode);
             setDifficulty(data.difficulty ?? defaultSettings.difficulty);
             setStartDay(data.startDay ?? defaultSettings.startDay);
-            setLongRunDay((data as any).longRunDay ?? (defaultSettings as any).longRunDay ?? 'Sunday');
+            setLongRunDay(data.longRunDay ?? defaultSettings.longRunDay);
+            setGoalRaceDate(data.goalRaceDate ?? defaultSettings.goalRaceDate); // Load goalRaceDate
             setIsDurationExpanded(data.isDurationExpanded ?? defaultSettings.isDurationExpanded);
             setIsLayoutExpanded(data.isLayoutExpanded ?? defaultSettings.isLayoutExpanded);
           });
@@ -88,15 +91,34 @@ export default function RunningCoach() {
   useEffect(() => {
     if (!isMounted.current) return;
     storage.set('running-coach-settings', {
-      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, isDurationExpanded, isLayoutExpanded
+      currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, goalRaceDate, isDurationExpanded, isLayoutExpanded
     });
-  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, isDurationExpanded, isLayoutExpanded]);
+  }, [currentTime, targetTime, duration, customDays, viewMode, difficulty, startDay, longRunDay, goalRaceDate, isDurationExpanded, isLayoutExpanded]);
 
   const handleExportPDF = async () => {
     // Native browser print is the most reliable way to preserve Tailwind styles 
     // and layout perfectly without server-side dependency issues.
     window.print();
   };
+
+  // Calculate duration based on goalRaceDate if set
+  const calculatedDuration = React.useMemo(() => {
+    if (goalRaceDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
+      const raceDate = new Date(goalRaceDate);
+      raceDate.setHours(0, 0, 0, 0); // Normalize race date to start of day
+
+      const diffTime = Math.abs(raceDate.getTime() - today.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return String(diffDays);
+    }
+    return duration; // Fallback to user-selected duration
+  }, [goalRaceDate, duration]);
+
+  // Custom days should reflect calculated duration if goalRaceDate is set
+  const displayCustomDays = goalRaceDate ? calculatedDuration : customDays;
+  const displayDuration = goalRaceDate ? 'custom' : duration; // Force 'custom' if goalRaceDate is active
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans print:bg-white print:p-0">
@@ -124,17 +146,18 @@ export default function RunningCoach() {
         <PlanSettings 
           currentTime={currentTime} setCurrentTime={setCurrentTime}
           targetTime={targetTime} setTargetTime={setTargetTime}
-          duration={duration} setDuration={setDuration}
-          customDays={customDays} setCustomDays={setCustomDays}
+          duration={displayDuration} setDuration={setDuration}
+          customDays={displayCustomDays} setCustomDays={setCustomDays}
           viewMode={viewMode} setViewMode={setViewMode}
           startDay={startDay} setStartDay={setStartDay}
           longRunDay={longRunDay} setLongRunDay={setLongRunDay}
+          goalRaceDate={goalRaceDate} setGoalRaceDate={setGoalRaceDate}
           difficulty={difficulty} setDifficulty={setDifficulty}
           isDurationExpanded={isDurationExpanded} setIsDurationExpanded={setIsDurationExpanded}
           isLayoutExpanded={isLayoutExpanded} setIsLayoutExpanded={setIsLayoutExpanded}
           activeId={activeId}
-          onGenerate={() => generatePlan({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay })}
-          onSave={() => updateActivePlan({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay })}
+          onGenerate={() => generatePlan({ currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate })}
+          onSave={() => updateActivePlan({ currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate })}
           onReset={handleResetSettings}
           onOpenOverlay={() => setIsOverlayOpen(true)}
         />
@@ -153,7 +176,7 @@ export default function RunningCoach() {
           savedPlans={savedPlans}
           activeId={activeId}
           onSave={(name) => {
-            saveAsNewPlan(name, { currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay });
+            saveAsNewPlan(name, { currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate });
             setIsOverlayOpen(false);
           }}
           onLoad={(id) => {
@@ -166,6 +189,7 @@ export default function RunningCoach() {
               setCustomDays(config.customDays);
               setStartDay(config.startDay);
               setLongRunDay(config.longRunDay || 'Sunday');
+              setGoalRaceDate(config.goalRaceDate); // Load goalRaceDate
               setDifficulty(config.difficulty);
               generatePlan(config);
             }
