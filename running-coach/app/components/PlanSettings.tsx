@@ -177,12 +177,21 @@ export const PlanSettings = (props: PlanSettingsProps) => {
                 </label>
                 <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
-                    <label key={d} className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${props.startDay === d ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <input type="radio" className="hidden" checked={props.startDay === d} onChange={() => props.setStartDay(d as DayOfWeekSchema)} />
+                    <label key={d} className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-[10px] uppercase tracking-tighter ${props.startDay === d ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'} ${props.goalRaceDate ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <input 
+                        type="radio" 
+                        className="hidden" 
+                        checked={props.startDay === d} 
+                        onChange={() => props.setStartDay(d as DayOfWeekSchema)} 
+                        disabled={!!props.goalRaceDate}
+                      />
                       {d.substring(0, 3)}
                     </label>
                   ))}
                 </div>
+                {props.goalRaceDate && (
+                  <p className="mt-2 text-[10px] text-slate-400 italic font-medium">* Plan starts today when a goal date is set.</p>
+                )}
               </div>
             </div>
           </motion.div>
