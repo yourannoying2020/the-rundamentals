@@ -16,6 +16,8 @@ export const PlanConfigSchema = z.object({
   difficulty: z.number().default(5),
   startDay: DayOfWeekSchema.default('Monday'),
   longRunDay: DayOfWeekSchema.default('Sunday'),
+  raceDistance: z.string().default('5'),
+  customRaceDistance: z.string().default('5'),
   goalRaceDate: z.string().optional(),
 });
 

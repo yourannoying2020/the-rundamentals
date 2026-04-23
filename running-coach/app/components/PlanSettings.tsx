@@ -25,6 +25,10 @@ interface PlanSettingsProps {
   setGoalRaceDate: (val: string | undefined) => void; // New prop
   difficulty: number;
   setDifficulty: (val: number) => void;
+  raceDistance: string;
+  setRaceDistance: (val: string) => void;
+  customRaceDistance: string;
+  setCustomRaceDistance: (val: string) => void;
   isAdvancedExpanded: boolean;
   setIsAdvancedExpanded: (val: boolean) => void;
   activeId: string | null;
@@ -36,11 +40,44 @@ interface PlanSettingsProps {
 
 export const PlanSettings = (props: PlanSettingsProps) => {
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+  
+  const distanceLabel = props.raceDistance === '5' ? '5km' : 
+                        props.raceDistance === '10' ? '10km' : 
+                        props.raceDistance === '21.1' ? 'Half Marathon' : 
+                        props.raceDistance === '42.2' ? 'Marathon' : 
+                        `${props.customRaceDistance}km`;
+
   return (
   <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-200 mb-8">
+    <div className="mb-6">
+      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">
+        <TrendingUp size={16} /> Target Distance
+      </label>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        {[
+          { id: '5', label: '5K' },
+          { id: '10', label: '10K' },
+          { id: '21.1', label: 'Half' },
+          { id: '42.2', label: 'Full' },
+          { id: 'custom', label: 'Custom' }
+        ].map((opt) => (
+          <label key={opt.id} className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all font-bold text-xs uppercase tracking-tight ${props.raceDistance === opt.id ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+            <input type="radio" className="hidden" checked={props.raceDistance === opt.id} onChange={() => props.setRaceDistance(opt.id)} />
+            {opt.label}
+          </label>
+        ))}
+      </div>
+      {props.raceDistance === 'custom' && (
+        <div className="mt-3 flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
+          <span className="text-sm font-bold text-slate-500 whitespace-nowrap">Distance (KM):</span>
+          <input type="number" value={props.customRaceDistance} onChange={(e) => props.setCustomRaceDistance(e.target.value)} className="flex-1 p-2 border-b-2 border-blue-200 bg-transparent focus:border-blue-500 outline-none font-bold text-blue-600 text-center" />
+        </div>
+      )}
+    </div>
+
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <TimeInput label="Recent 5km Time (MM:SS)" icon={Timer} value={props.currentTime} onChange={props.setCurrentTime} />
-      <TimeInput label="Target 5km Time (MM:SS)" icon={Target} value={props.targetTime} onChange={props.setTargetTime} isTarget />
+      <TimeInput label={`Recent ${distanceLabel} Time`} icon={Timer} value={props.currentTime} onChange={props.setCurrentTime} />
+      <TimeInput label={`Target ${distanceLabel} Time`} icon={Target} value={props.targetTime} onChange={props.setTargetTime} isTarget />
     </div>
 
     <div className="mt-6 pt-6 border-t border-slate-100">

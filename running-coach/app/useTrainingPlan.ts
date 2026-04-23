@@ -47,7 +47,7 @@ export function useTrainingPlan() {
     }
   }, [savedPlans, activeId]);
 
-  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay = 'Sunday', goalRaceDate }: PlanConfig) => {
+  const generatePlan = ({ currentTime, targetTime, duration, customDays, difficulty, startDay, longRunDay = 'Sunday', goalRaceDate, raceDistance, customRaceDistance }: PlanConfig) => {
     const formatPace = (totalSeconds: number): string => {
       const m = Math.floor(totalSeconds / 60);
       const s = Math.round(totalSeconds % 60);
@@ -67,13 +67,20 @@ export function useTrainingPlan() {
       totalDays = duration === 'custom' ? parseInt(customDays) || 1 : parseInt(duration);
     }
 
+    const numDistance = raceDistance === 'custom' ? parseFloat(customRaceDistance) || 5 : parseFloat(raceDistance);
+    // Scaling factor for mileage based on race distance (normalized to 5k base)
+    const distFactor = Math.max(1, numDistance / 5);
+    // Adjustment factor to keep training volume realistic for marathons (logarithmic scaling)
+    const volumeScale = 1 + Math.log10(distFactor) * 2;
+
     const iterations = goalRaceDate ? totalDays + 1 : totalDays;
     const currentTotal = parseInt(currentTime.min) * 60 + parseInt(currentTime.sec);
     const targetTotal = parseInt(targetTime.min) * 60 + parseInt(targetTime.sec);
+    
     const totalWeeks = Math.ceil(iterations / 7);
 
-    const currentPaceKm = currentTotal / 5;
-    const targetPaceKm = targetTotal / 5;
+    const currentPaceKm = currentTotal / numDistance;
+    const targetPaceKm = targetTotal / numDistance;
 
     const daysOfWeekOrder: DayOfWeekSchema[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     
@@ -119,12 +126,12 @@ export function useTrainingPlan() {
 
       const template = [
         { day: getDayName(-6), title: 'Rest & Recovery', workout: isTaperWeek ? 'Complete rest. Stay off your feet.' : 'Focus on mobility or light stretching.', pace: '-', distance: '-', type: 'rest' },
-        { day: getDayName(-5), title: 'Foundation Run', workout: 'Easy aerobic building run.', pace: formatPace(easyPace), distance: `${(5 * volumeModifier).toFixed(1)} km`, type: 'easy' },
-        { day: getDayName(-4), title: 'Goal Pace Intervals', workout: isTaperWeek ? '3 x 800m at goal pace. Keep it sharp but short.' : `${Math.floor(6 * volumeModifier)} x 800m with 2:00 recovery walk.`, pace: formatPace(weeklyGoalPace), distance: isTaperWeek ? '2.4 km + WU/CD' : '4.8 km + WU/CD', type: 'hard' },
-        { day: getDayName(-3), title: 'Recovery or Rest', workout: 'Very light movement or total rest.', pace: formatPace(easyPace + 20), distance: `${(3 * volumeModifier).toFixed(1)} km`, type: 'easy' },
-        { day: getDayName(-2), title: 'Threshold (Tempo)', workout: isTaperWeek ? 'Short 15 min tempo effort to keep legs moving.' : 'Sustainable hard effort to build stamina.', pace: formatPace(tempoPace), distance: `${(isTaperWeek ? 2.5 : 4 * volumeModifier).toFixed(1)} km`, type: 'hard' },
-        { day: getDayName(-1), title: 'Shakeout Run', workout: 'Keep heart rate low, legs moving.', pace: formatPace(easyPace), distance: '3 km', type: 'easy' },
-        { day: getDayName(0), title: 'Endurance Long Run', workout: isTaperWeek ? 'Final 5km Time Trial! Push for your PB.' : isDeloadWeek ? 'Reduced volume for recovery.' : 'The weekly cornerstone for aerobic capacity.', pace: formatPace(isTaperWeek ? weeklyGoalPace : easyPace), distance: isTaperWeek ? '5.0 km' : `${(8 * volumeModifier).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(-5), title: 'Foundation Run', workout: 'Easy aerobic building run.', pace: formatPace(easyPace), distance: `${(5 * volumeModifier * volumeScale).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(-4), title: 'Goal Pace Intervals', workout: isTaperWeek ? `3 x 800m at goal pace. Keep it sharp.` : `${Math.floor(6 * volumeModifier * volumeScale)} x 800m with 2:00 recovery walk.`, pace: formatPace(weeklyGoalPace), distance: isTaperWeek ? '2.4 km + WU/CD' : `${(4.8 * volumeScale).toFixed(1)} km + WU/CD`, type: 'hard' },
+        { day: getDayName(-3), title: 'Recovery or Rest', workout: 'Very light movement or total rest.', pace: formatPace(easyPace + 20), distance: `${(3 * volumeModifier * volumeScale).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(-2), title: 'Threshold (Tempo)', workout: isTaperWeek ? 'Short 15 min tempo effort.' : 'Sustainable hard effort to build stamina.', pace: formatPace(tempoPace), distance: `${(isTaperWeek ? 2.5 : 4 * volumeModifier * volumeScale).toFixed(1)} km`, type: 'hard' },
+        { day: getDayName(-1), title: 'Shakeout Run', workout: 'Keep heart rate low, legs moving.', pace: formatPace(easyPace), distance: `${(3 * volumeScale).toFixed(1)} km`, type: 'easy' },
+        { day: getDayName(0), title: 'Endurance Long Run', workout: isTaperWeek ? `Final ${numDistance}km Race Day Prep.` : isDeloadWeek ? 'Reduced volume for recovery.' : 'The weekly cornerstone for aerobic capacity.', pace: formatPace(isTaperWeek ? weeklyGoalPace : easyPace), distance: isTaperWeek ? `${numDistance.toFixed(1)} km` : `${(8 * volumeModifier * volumeScale).toFixed(1)} km`, type: 'easy' },
       ];
 
       const currentDayName = reorderedDaysOfWeek[dayInWeek];
@@ -135,8 +142,8 @@ export function useTrainingPlan() {
           day: iterations > 7 ? `W${weekNum}: ${currentDayName}` : currentDayName,
           title: "🏁 RACE DAY!",
           workout: "This is it! You've put in the work, now trust your training. Stay focused, pace yourself, and enjoy the atmosphere. You've got this!",
-          pace: formatPace(targetTotal / 5),
-          distance: "5.0 km",
+          pace: formatPace(targetTotal / numDistance),
+          distance: `${numDistance.toFixed(1)} km`,
           type: 'hard'
         } as TrainingDay);
       } else {
