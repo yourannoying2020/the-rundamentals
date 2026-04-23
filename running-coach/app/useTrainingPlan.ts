@@ -74,8 +74,8 @@ export function useTrainingPlan() {
     const volumeScale = 1 + Math.log10(distFactor) * 2;
 
     const iterations = goalRaceDate ? totalDays + 1 : totalDays;
-    const currentTotal = parseInt(currentTime.min) * 60 + parseInt(currentTime.sec);
-    const targetTotal = parseInt(targetTime.min) * 60 + parseInt(targetTime.sec);
+    const currentTotal = parseInt(currentTime.hrs || '0') * 3600 + parseInt(currentTime.min) * 60 + parseInt(currentTime.sec);
+    const targetTotal = parseInt(targetTime.hrs || '0') * 3600 + parseInt(targetTime.min) * 60 + parseInt(targetTime.sec);
     
     const totalWeeks = Math.ceil(iterations / 7);
 

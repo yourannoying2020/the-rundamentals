@@ -4,8 +4,8 @@ import { LucideIcon } from 'lucide-react';
 interface TimeInputProps {
   label: string;
   icon: LucideIcon;
-  value: { min: string; sec: string };
-  onChange: (value: { min: string; sec: string }) => void;
+  value: { hrs: string; min: string; sec: string };
+  onChange: (value: { hrs: string; min: string; sec: string }) => void;
   isTarget?: boolean;
 }
 
@@ -14,7 +14,15 @@ export const TimeInput = ({ label, icon: Icon, value, onChange, isTarget }: Time
     <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
       <Icon size={16} /> {label}
     </label>
-    <div className="flex gap-2">
+    <div className="flex gap-2 items-center">
+      <input 
+        type="number" 
+        value={value.hrs} 
+        onChange={e => onChange({...value, hrs: e.target.value})} 
+        placeholder="HH"
+        className={`w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none ${isTarget ? 'font-bold text-blue-600' : ''}`} 
+      />
+      <span className="text-xl font-bold">:</span>
       <input 
         type="number" 
         value={value.min} 
