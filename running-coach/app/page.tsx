@@ -170,8 +170,8 @@ export default function RunningCoach() {
           customRaceDistance={customRaceDistance} setCustomRaceDistance={setCustomRaceDistance}
           isAdvancedExpanded={isAdvancedExpanded} setIsAdvancedExpanded={setIsAdvancedExpanded}
           activeId={activeId}
-          onGenerate={() => generatePlan({ currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate, raceDistance, customRaceDistance })}
-          onSave={() => updateActivePlan({ currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate, raceDistance, customRaceDistance })}
+          onGenerate={() => generatePlan({ currentTime, targetTime, duration: displayDuration, customDays: displayCustomDays, difficulty, startDay, longRunDay, goalRaceDate, raceDistance, customRaceDistance })}
+          onSave={() => updateActivePlan({ currentTime, targetTime, duration: displayDuration, customDays: displayCustomDays, difficulty, startDay, longRunDay, goalRaceDate, raceDistance, customRaceDistance })}
           onReset={handleResetSettings}
           onOpenOverlay={() => setIsOverlayOpen(true)}
         />
@@ -190,7 +190,7 @@ export default function RunningCoach() {
           savedPlans={savedPlans}
           activeId={activeId}
           onSave={(name) => {
-            saveAsNewPlan(name, { currentTime, targetTime, duration: calculatedDuration, customDays: calculatedDuration, difficulty, startDay, longRunDay, goalRaceDate, raceDistance, customRaceDistance });
+            saveAsNewPlan(name, { currentTime, targetTime, duration: displayDuration, customDays: displayCustomDays, difficulty, startDay, longRunDay, goalRaceDate, raceDistance, customRaceDistance });
             setIsOverlayOpen(false);
           }}
           onLoad={(id) => {
