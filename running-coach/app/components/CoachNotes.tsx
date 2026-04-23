@@ -8,7 +8,7 @@ export const CoachNotes = () => (
     </h3>
     <ul className="text-sm text-blue-700 space-y-2 list-disc ml-4">
       <li><strong>Easy runs:</strong> Should feel like a 3/10 effort. You should be able to talk in full sentences.</li>
-      <li><strong>Intervals:</strong> These prepare your body for the physical toll of 5km pace. {"Don't skip the warm-up!"}</li>
+      <li><strong>Intervals:</strong> These prepare your body for the physical toll of race pace. {"Don't skip the warm-up!"}</li>
       <li><strong>Threshold:</strong> {"\"Comfortably hard\""} - a 7/10 effort where you can only say single words.</li>
     </ul>
   </div>

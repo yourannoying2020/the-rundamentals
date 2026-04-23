@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rundamentals - Smart training plans for your next personal best.",
-  description: "Rundamentals - Smart training plans for your next personal best.",
+  title: "The Rundamentals - Smart training plans for your next personal best.",
+  description: "The Rundamentals - Smart training plans for your next personal best.",
 };
 
 export default function RootLayout({

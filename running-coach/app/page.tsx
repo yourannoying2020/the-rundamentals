@@ -171,7 +171,7 @@ export default function RunningCoach() {
 
       {/* Print-only Header */}
       <div className="hidden print:block mb-8 border-b-2 border-blue-600 pb-4">
-        <h1 className="text-3xl font-black text-blue-600 italic">5K COACH TRAINING PLAN</h1>
+        <h1 className="text-3xl font-black text-blue-600 italic">THE RUNDAMENTALS TRAINING PLAN</h1>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Generated for your next Personal Best</p>
       </div>
 
