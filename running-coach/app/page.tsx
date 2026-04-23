@@ -25,7 +25,7 @@ export default function RunningCoach() {
   const [startDay, setStartDay] = useState<DayOfWeekSchema>(defaultSettings.startDay);
   const [raceDistance, setRaceDistance] = useState(defaultSettings.raceDistance);
   const [customRaceDistance, setCustomRaceDistance] = useState(defaultSettings.customRaceDistance);
-  const [longRunDay, setLongRunDay] = useState<DayOfWeekSchema>((defaultSettings as any).longRunDay || 'Sunday');
+  const [longRunDay, setLongRunDay] = useState<DayOfWeekSchema>(defaultSettings.longRunDay);
   const [goalRaceDate, setGoalRaceDate] = useState<string | undefined>(defaultSettings.goalRaceDate); // New state for goal race date
   const [difficulty, setDifficulty] = useState(defaultSettings.difficulty);
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(defaultSettings.isAdvancedExpanded);
@@ -64,8 +64,16 @@ export default function RunningCoach() {
         const data = result.data;
         if (data) { // Check if data is not null or undefined
           React.startTransition(() => {
-            setCurrentTime(data.currentTime ?? defaultSettings.currentTime);
-            setTargetTime(data.targetTime ?? defaultSettings.targetTime);
+            setCurrentTime({
+              hrs: data.currentTime?.hrs ?? defaultSettings.currentTime.hrs,
+              min: data.currentTime?.min ?? defaultSettings.currentTime.min,
+              sec: data.currentTime?.sec ?? defaultSettings.currentTime.sec,
+            });
+            setTargetTime({
+              hrs: data.targetTime?.hrs ?? defaultSettings.targetTime.hrs,
+              min: data.targetTime?.min ?? defaultSettings.targetTime.min,
+              sec: data.targetTime?.sec ?? defaultSettings.targetTime.sec,
+            });
             setDuration(data.duration ?? defaultSettings.duration);
             setCustomDays(data.customDays ?? defaultSettings.customDays);
             setViewMode(data.viewMode ?? defaultSettings.viewMode);
